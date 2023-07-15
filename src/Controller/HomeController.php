@@ -85,15 +85,15 @@ class HomeController extends AbstractController {
         // Collect Registration Code
         foreach ($company_profile_html_array as $key => $val) {
             if (strpos($val, "Registration code")) {
-                $company_name_index = $key + 1;
+                $company_rc_index = $key + 1;
                 break;
             }
         }
         
-        $dom->loadHTML($company_profile_html_array[$company_name_index]);
-        $name_element = $dom->getElementsByTagName('h2');
-        $name_obj = $name_element->item(0);
-        $company_details['name'] = str_replace("Company", "", ucwords(strtolower($name_obj->textContent)));
+        $dom->loadHTML($company_profile_html_array[$company_rc_index]);
+        $rc_element = $dom->getElementsByTagName('td');
+        $rc_obj = $rc_element->item(0);
+        $company_details['registration_code'] = $rc_obj->textContent;
 
         print_r($company_details);
 //        print_r($company_profile_html_array);
