@@ -11,14 +11,13 @@
 <div class="example-wrapper">
     <h1>Hello {{ controller_name }}! ✅</h1>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ '/var/www/html/my_project_directory/src/Controller/HomeController.php'|file_link(0) }}">src/Controller/HomeController.php</a></code></li>
-        <li>Your template at <code><a href="{{ '/var/www/html/my_project_directory/templates/home/index.html.twig'|file_link(0) }}">templates/home/index.html.twig</a></code></li>
-    </ul>
     <p>
         Kirons Content : 
-        {{ content }}
+        <p>Name : {{ content['name'] }}</p>
+        <p>Address : {{ content['address'] }}</p>
+        <p>VAT : {{ content['vat'] }}</p>
+        <p>Registation Code : {{ content['registration_code'] }}</p>
+        <p>Mobile : <img src="{{ content['mobile'] }}" alt="{{ content['name'] }} Mobile phone" title="{{ content['name'] }} Mobile phone"/></p>
     </p>
 </div>
 {% endblock %}
