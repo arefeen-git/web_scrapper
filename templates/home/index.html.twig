@@ -21,11 +21,13 @@
 
         <p>
             Kirons Content : 
-        <p>Name : {{ content['name'] }}</p>
-        <p>Address : {{ content['address'] }}</p>
-        <p>VAT : {{ content['vat'] }}</p>
-        <p>Registation Code : {{ content['registration_code'] }}</p>
-        <p>Mobile : <img src="{{ content['mobile'] }}" alt="{{ content['name'] }} Mobile phone" title="{{ content['name'] }} Mobile phone"/></p>
-    </p>
-</div>
+            <p>Name : {{ content['name'] }}</p>
+            <p>Address : {{ content['address'] }}</p>
+            <p>VAT : {{ content['vat'] }}</p>
+            <p>Registation Code : {{ content['registration_code'] }}</p>
+            <p>Mobile : <img src="{{ content['mobile'] }}" alt="{{ content['name'] }} Mobile phone" title="{{ content['name'] }} Mobile phone"/></p>
+        </p>
+        <br/>
+        {{ turnover|raw }}
+    </div>
 {% endblock %}

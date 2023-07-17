@@ -13,8 +13,10 @@ class Constants {
     
     public const ADDRESS    = 'Address';
     public const MOBILE     = 'Mobile phone';
-    public const NAME     = 'NAME';
+    public const NAME       = 'NAME';
 
+    public const IDENTIFY_COMPANY_TURNOVER = "postCodes table currency-table finances-table";
+    
     public const IDENTIFY_COMPANY_DETAILS = [
         'NAME' => [
             'IDENTIFYING_KEY'   => 'top-title',
