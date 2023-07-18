@@ -5,16 +5,23 @@
 {% block body %}
     <div class="container">
 
-        <div id="submission_form m-2 p-2">
-            <div class="input-group m-3">
-                <span class="input-group-text">Cookie-Consent</span>
-                <textarea id="cookie-consent" name="cookie-consent" class="form-control" style="height: 250px; resize: none;" aria-label="With textarea"></textarea>
+        <div id="submission_form" class="m-2 p-2">
+            <div class="form-group m-3">
+                <label for="cookie-consent" class="input-group-text">Cookie-Consent</label>
+                <div class="input-group">
+                    <textarea id="cookie-consent" name="cookie-consent" class="form-control" style="height: 250px; resize: none;" aria-label="With textarea"></textarea>
+                </div>
             </div>
-            <div class="input-group m-3">
-                <button class="btn btn-outline-info" type="button" id="start_scraping">Scrap me!</button>
-                <input id="rc-code" name="rc-code" type="text" class="form-control" placeholder="Registration Code" aria-label="Registration Code" aria-describedby="start_scraping">
+            <div id="cookie-error" class="text-danger ml-3"></div>
+            <div class="form-group m-3">
+                <div class="input-group">
+                    <button class="btn btn-outline-info" type="button" id="start_scraping">Scrap me!</button>
+                    <input id="rc-code" name="rc-code" type="text" class="form-control" placeholder="Registration Code" aria-label="Registration Code" aria-describedby="start_scraping" maxlength="9">
+                </div>
             </div>
+            <div id="rc-code-error" class="text-danger ml-3"></div>
         </div>
+
 
     </div>
 

@@ -19,29 +19,47 @@
             <script>
                 $(function () {
                     $("#start_scraping").click(function () {
-                        var cookieConsent = $("#cookie-consent").val();
-                        var rcCode = $("#rc-code").val();
-
-                        // Create an object with the form data
-                        var formData = {
-                            'cookie-consent': cookieConsent,
-                            'rc-code': rcCode
-                        };
-
-                        // Send the AJAX request
-                        $.ajax({
-                            type: 'POST',
-                            url: '{{ path('app_company_scrap') }}',
-                            data: formData,
-                            success: function (response) {
-                                // Handle the successful response
-                                console.log(response);
-                            },
-                            error: function (error) {
-                                // Handle the error response
-                                console.log(error);
-                            }
-                        });
+                        
+                        // Clear error messages to start a new.
+                        $("#cookie-error").text("");
+                        $("#rc-code-error").text("");
+                        
+                        var cookieConsent = $("#cookie-consent").val().trim();
+                        var rcCode = $("#rc-code").val().trim();
+                        
+                        // Setting error message.
+                        if (cookieConsent === "") {
+                            $("#cookie-error").text("Cookie Consent is required.");
+                        }
+                        
+                        var rcCodeRegex = /^\d{9}$/; // Regex from Heap Overflow!!
+                        
+                        if (rcCode === "") {
+                            $("#rc-code-error").text("Registration Code is required.");
+                        } else if (!rcCode.match(rcCodeRegex)) {
+                            $("#rc-code-error").text("Registration Code must be a 9-digit number.");
+                        }
+                        
+                        // Proceed with the AJAX request if no validation errors
+                        if (cookieConsent !== "" && rcCode !== "" && rcCode.match(rcCodeRegex)) {
+                            var formData = {
+                                'cookie-consent': cookieConsent,
+                                'rc-code': rcCode
+                            };
+                            $.ajax({
+                                type: 'POST',
+                                url: '/company/scrap',
+                                data: formData,
+                                success: function (response) {
+                                    // Handle the successful response
+                                    console.log(response);
+                                },
+                                error: function (error) {
+                                    // Handle the error response
+                                    console.log(error);
+                                }
+                            });
+                        }
                     });
                 });
             </script>
