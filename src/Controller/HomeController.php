@@ -15,7 +15,7 @@ class HomeController extends AbstractController {
 
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
-        $cookie_consent = 'CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%223e8df365-6f2c-4c1a-80ad-d5c902d78b97%22%7D; _gid=GA1.2.857438531.1689414271; PHPSESSID=gvbugto6onfaib0lstd0nd2nnc; __cf_bm=5YvAQOxSkht4rxdiY5t9DWf90L_3uzy9hxRU6RcWnqc-1689550020-0-AewZljYM4olR9I5T/+zjuv6pV54G+MqByPd1EeqZF2E466v/NBXEutsjZF/vG0EiPQ==; cf_clearance=N2XH4mr1f00URDcFi7.N26RY9bnTaNIvTVpiSJx3Dyw-1689551445-0-250; _gat_UA-724652-3=1; _ga_D931ERQW91=GS1.1.1689550018.30.1.1689551456.0.0.0; _ga=GA1.1.1096950485.1688928483';
+        $cookie_consent = 'CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%223e8df365-6f2c-4c1a-80ad-d5c902d78b97%22%7D; _gid=GA1.2.857438531.1689414271; PHPSESSID=n9h9lma8dvv4dasarfnsb9228t; cf_clearance=kNrPqdom6auENPKZAN12LNGyN.GbUh38bNVThLdXN3M-1689589199-0-250; __cf_bm=1m66Z1T4N4yUwxQ9rCRJcI.Pt9m_o3mcDB9gud9yFgM-1689589207-0-ATNrsBJymNvIumYC7MvsgFvbv8il3lXWeffvfUVc6eUO7mjko/FiFLCEcBsDSimssA==; _gat_UA-724652-3=1; _ga_D931ERQW91=GS1.1.1689589199.32.1.1689589207.0.0.0; _ga=GA1.1.1096950485.1688928483';
         $user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36';
 
         // Set request headers
@@ -191,7 +191,7 @@ class HomeController extends AbstractController {
         }
 
         // Modified HTML content
-        $mod_html = '<table id="financial_details">';
+        $mod_html = '<table id="financial_details" class="table table-striped table-bordered">';
         foreach ($table->childNodes as $node) {
             $mod_html .= $dom->saveHTML($node);
         }
