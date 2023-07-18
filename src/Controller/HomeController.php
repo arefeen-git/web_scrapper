@@ -9,13 +9,22 @@ use DOMDocument, DOMXPath;
 use App\Constants;
 
 class HomeController extends AbstractController {
+    
+    #[Route('/home/test', name: 'app_home_test')]
+    public function test(): Response {
+        $number = "5";
 
+        return new Response(
+            '<html><body>Lucky number: '.$number.'</body></html>'
+        );
+    }
+    
     #[Route('/home', name: 'app_home')]
     public function index(): Response {
 
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
-        $cookie_consent = 'CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%223e8df365-6f2c-4c1a-80ad-d5c902d78b97%22%7D; _gid=GA1.2.857438531.1689414271; PHPSESSID=n9h9lma8dvv4dasarfnsb9228t; cf_clearance=kNrPqdom6auENPKZAN12LNGyN.GbUh38bNVThLdXN3M-1689589199-0-250; __cf_bm=1m66Z1T4N4yUwxQ9rCRJcI.Pt9m_o3mcDB9gud9yFgM-1689589207-0-ATNrsBJymNvIumYC7MvsgFvbv8il3lXWeffvfUVc6eUO7mjko/FiFLCEcBsDSimssA==; _gat_UA-724652-3=1; _ga_D931ERQW91=GS1.1.1689589199.32.1.1689589207.0.0.0; _ga=GA1.1.1096950485.1688928483';
+        $cookie_consent = 'CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%223e8df365-6f2c-4c1a-80ad-d5c902d78b97%22%7D; _gid=GA1.2.857438531.1689414271; cf_clearance=6d3nZ1RiRxV3SzH4kWbnrd.DwqGpLkjs_IxJ0Oiw0z8-1689675425-0-250.2.1689675425; _gat_UA-724652-3=1; PHPSESSID=o317ovuu69q18s5jjjs8pruml4; _ga_D931ERQW91=GS1.1.1689675426.34.1.1689675444.0.0.0; _ga=GA1.1.1096950485.1688928483';
         $user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36';
 
         // Set request headers
