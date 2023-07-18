@@ -2,3 +2,23 @@ home_route:
     path: /home
     controller: App\Controller\HomeController::index
     methods: GET
+
+home_test_route:
+    path: /home/test
+    controller: App\Controller\HomeController::test
+    methods: GET
+    
+app_company_index:
+    path: /company/
+    controller: App\Controller\CompanyController::index
+    methods: GET
+    
+app_company_new:
+    path: /company/new
+    controller: App\Controller\CompanyController::new
+    methods: GET
+    
+app_company_scrap:
+    path: /company/scrap
+    controller: App\Controller\CompanyController::scrap
+    methods: POST
