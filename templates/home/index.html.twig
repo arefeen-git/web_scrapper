@@ -1,33 +1,36 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
-
 {% block body %}
-    <style>
-        .example-wrapper {
-            margin: 1em auto;
-            max-width: 800px;
-            width: 95%;
-            font: 18px/1.5 sans-serif;
-        }
-        .example-wrapper code {
-            background: #F5F5F5;
-            padding: 2px 6px;
-        }
-    </style>
+    <div class="container">
 
-    <div class="example-wrapper">
-        <h1>Hello {{ controller_name }}! ✅</h1>
+        <div id="submission_form m-2 p-2">
+            <div class="input-group m-3">
+                <span class="input-group-text">Cookie-Consent</span>
+                <textarea class="form-control" style="height: 250px; resize: none;" aria-label="With textarea"></textarea>
+            </div>
+            <div class="input-group m-3">
+                <button class="btn btn-outline-info" type="button" id="button-addon1">Scrap me!</button>
+                <input type="text" class="form-control" placeholder="Registration Code" aria-label="Registration Code" aria-describedby="button-addon1">
+            </div>
+        </div>
 
-        <p>
-            Kirons Content : 
-            <p>Name : {{ content['name'] }}</p>
-            <p>Address : {{ content['address'] }}</p>
-            <p>VAT : {{ content['vat'] }}</p>
-            <p>Registation Code : {{ content['registration_code'] }}</p>
-            <p>Mobile : <img src="{{ content['mobile'] }}" alt="{{ content['name'] }} Mobile phone" title="{{ content['name'] }} Mobile phone"/></p>
-        </p>
+        <div class="mx-auto m-2 p-2 " style="width: 350px;">
+            <h2 class="text-center">Company Details</h2>
+        </div>
+
+        <div class="p-1">
+            <p>Name: {{ content['name'] }}</p>
+            <p>Address: {{ content['address'] }}</p>
+            <p>VAT: {{ content['vat'] }}</p>
+            <p>Registation Code: {{ content['registration_code'] }}</p>
+            <p>Mobile: <img src="{{ content['mobile'] }}" alt="{{ content['name'] }} Mobile phone" title="{{ content['name'] }} Mobile phone" class="img-fluid"/></p>
+        </div>
+
         <br/>
-        {{ turnover|raw }}
+        
+        <div table-responsive>
+            {{ turnover|raw }}
+        </div>
+
     </div>
 {% endblock %}
