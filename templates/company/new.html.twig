@@ -15,15 +15,143 @@
             <div id="cookie-error" class="text-danger ml-3"></div>
             <div class="form-group m-3">
                 <div class="input-group">
-                    <button class="btn btn-outline-info" type="button" id="start_scraping">Scrap me!</button>
+                    <button class="btn btn-info" type="button" id="start_scraping">
+                        <svg id="spinner" style="display: none;" xmlns="http://www.w3.org/2000/svg" height="0.875em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"/></svg>
+                        <span id="scrap_text" >Scrap me!</span>
+                    </button>
                     <input id="rc-code" name="rc-code" type="text" class="form-control" placeholder="Registration Code" aria-label="Registration Code" aria-describedby="start_scraping" maxlength="9">
                 </div>
             </div>
             <div id="rc-code-error" class="text-danger ml-3"></div>
+            <!-- Spinner element -->
         </div>
 
 
     </div>
 
     {#    <a href="{{ path('app_company_index') }}">back to list</a>#}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- Page-specific script for new.html.twig -->
+    <script>
+        // Cookie methods - Vanilla JS -
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ')
+                    c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0)
+                    return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function removeCookie(name) {
+            document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        }
+    </script>
+
+    <script>
+        // For cookie consent, as that is a large string. Cookie allows only 4096 bytes.
+        function saveToLocalStorage(key, data) {
+            localStorage.setItem(key, data);
+        }
+        function retrieveFromLocalStorage(key) {
+            return localStorage.getItem(key);
+        }
+        function removeFromLocalStorage(key) {
+            localStorage.removeItem(key);
+        }
+
+    </script>
+
+    <script>
+        $(function () {
+            //Check if Cookie Set, then set the value to input fields.
+            let cookie_rc = getCookie('rc-code');
+            let cookie_consent = retrieveFromLocalStorage('cookieConsent');
+            ;
+
+            if (cookie_rc) {// This means both values should be present in the cookie.
+                $("#cookie-consent").val(cookie_consent);
+                $("#rc-code").val(cookie_rc);
+            }
+
+            $("#start_scraping").click(function () {
+                // Disable the button and show Spinner.
+                $("#start_scraping").prop("disabled", true);
+                // Show the spinner
+                $("#spinner").show();
+                $("#scrap_text").hide();
+
+                // Clear error messages to start anew.
+                $("#cookie-error").text("");
+                $("#rc-code-error").text("");
+
+                var cookieConsent = $("#cookie-consent").val().trim();
+                var rcCode = $("#rc-code").val().trim();
+
+                // Setting error message.
+                if (cookieConsent === "") {
+                    $("#cookie-error").text("Cookie Consent is required.");
+                }
+
+                var rcCodeRegex = /^\d{9}$/; // Regex from HeapOverflow!!
+
+                if (rcCode === "") {
+                    $("#rc-code-error").text("Registration Code is required.");
+                } else if (!rcCode.match(rcCodeRegex)) {
+                    $("#rc-code-error").text("Registration Code must be a 9-digit number.");
+                }
+
+                // Now AJAX ...
+                if (cookieConsent !== "" && rcCode !== "" && rcCode.match(rcCodeRegex)) {
+                    var formData = {
+                        'cookie-consent': cookieConsent,
+                        'rc-code': rcCode
+                    };
+                    $.ajax({
+                        type: 'POST',
+                        url: '/company/scrap',
+                        data: formData,
+                        success: function (response) {
+                            // Set cookie to keep the input fields and then read from them.
+                            setCookie('rc-code', rcCode, 1);
+
+                            // Cookie consent breaks max char limit. Setting it in parts.
+                            saveToLocalStorage('cookieConsent', cookieConsent);
+                        },
+                        error: function (error) {
+                            removeCookie('rc-code');
+                            removeFromLocalStorage('cookieConsent');
+                        },
+                        complete: function () {
+                            // Re-enable button and hide spinner.
+                            $("#start_scraping").prop("disabled", false);
+                            $("#spinner").hide();
+                            $("#scrap_text").show();
+                        }
+                    });
+                } else {
+                    $("#start_scraping").prop("disabled", false);
+                    $("#spinner").hide();
+                    $("#scrap_text").show();
+                }
+            });
+        });
+    </script>
 {% endblock %}
