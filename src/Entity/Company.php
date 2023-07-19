@@ -8,11 +8,6 @@ use Doctrine\ORM\Mapping as ORM;
 // Arefeen : Use  for Schema.
 
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
-#[ORM\Table(
-    name: "company",
-    uniqueConstraints: [#[ORM\UniqueConstraint(columns: ["registration_code"], name: "unique_registration_code")]
-])]
-
 class Company {
 
     #[ORM\Id]
@@ -21,7 +16,6 @@ class Company {
     private ?int $id = null;
 
     #[ORM\Column]
-    #[ORM\Unique]
     private ?int $registration_code = null;
 
     #[ORM\Column(length: 255)]
