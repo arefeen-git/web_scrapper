@@ -7,9 +7,9 @@
 /public/bundles/
 /var/
 /vendor/
-.env
-compoer.lock
-symfony.lock
+/.env
+/compoer.lock
+/symfony.lock
 .gitignore.swp
 /nbproject/
 package-lock.json
