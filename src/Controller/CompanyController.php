@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Company;
 use App\Form\CompanyType;
 use App\Repository\CompanyRepository;
+use App\Utility\ScraperUtility;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,14 +26,16 @@ class CompanyController extends AbstractController {
 
     #[Route('/scrap', name: 'app_company_scrap', methods: ['POST'])]
     public function scrap(Request $request): JsonResponse {
+//        sleep(5);
         $cookie_consent = $request->request->get('cookie-consent');
         $rc_code = $request->request->get('rc-code');
         
+        $scraperUtility = new ScraperUtility();
+        $company_details = $scraperUtility->start_scraping($rc_code, $cookie_consent);
+        
         $responseData = [
             'message'   => 'Scraping completed successfully',
-            'cookie_consent'  => $cookie_consent,
-            'rc_code'  => $rc_code
-                // Add any additional data you want to include in the response
+            'company_details'  => $company_details
         ];
 
         // Set the appropriate status code
