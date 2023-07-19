@@ -6,13 +6,13 @@ use App\Entity\Company;
 use App\Form\CompanyType;
 use App\Repository\CompanyRepository;
 use App\Utility\ScraperUtility;
-
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
 #[Route('/company')]
 class CompanyController extends AbstractController {
@@ -26,29 +26,45 @@ class CompanyController extends AbstractController {
 
     #[Route('/scrap', name: 'app_company_scrap', methods: ['POST'])]
     public function scrap(Request $request): JsonResponse {
-//        sleep(5);
-        $cookie_consent = $request->request->get('cookie-consent');
-        $rc_code = $request->request->get('rc-code');
-        
-        $scraperUtility = new ScraperUtility();
-        $company_details = $scraperUtility->start_scraping($rc_code, $cookie_consent);
-        
-        $responseData = [
-            'message'   => 'Scraping completed successfully',
-            'company_details'  => $company_details
-        ];
 
-        // Set the appropriate status code
-        $statusCode = JsonResponse::HTTP_OK; // 200
-        // Return the JSON response
-        return new JsonResponse($responseData, $statusCode);
+        $submittedToken = $request->request->get('csrf_token');
+        $csrfToken = $request->getSession()->get('company_item_csrf_token');
+        
+        if ($submittedToken !== $csrfToken) {
+            $responseData = [
+                'message' => 'Multiversal Request Not Allowed!!! Contact Doromammu for Bargain',
+            ];
+            
+            $statusCode = JsonResponse::HTTP_UNAUTHORIZED; // 401
+            return new JsonResponse($responseData, $statusCode);
+            
+        } else {
+            $cookie_consent = $request->request->get('cookie-consent');
+            $rc_code = $request->request->get('rc-code');
+
+            $scraperUtility = new ScraperUtility();
+            $company_details = $scraperUtility->start_scraping($rc_code, $cookie_consent);
+
+            $responseData = [
+                'message' => 'Scraping completed successfully',
+                'company_details' => $company_details
+            ];
+
+            // Set the appropriate status code
+            $statusCode = JsonResponse::HTTP_OK; // 200
+            return new JsonResponse($responseData, $statusCode);
+        }
     }
 
     #[Route('/new', name: 'app_company_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response {
+    public function new(Request $request, EntityManagerInterface $entityManager, TokenGeneratorInterface $tokenGenerator): Response {
         $company = new Company();
         $form = $this->createForm(CompanyType::class, $company);
         $form->handleRequest($request);
+        
+        // Generate and store the CSRF token in the session
+        $token = $tokenGenerator->generateToken();
+        $request->getSession()->set('company_item_csrf_token', $token);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($company);
@@ -60,6 +76,7 @@ class CompanyController extends AbstractController {
         return $this->render('company/new.html.twig', [
                     'company' => $company,
                     'form' => $form,
+                    'csrf_token' => $token
         ]);
     }
 

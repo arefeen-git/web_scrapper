@@ -6,6 +6,7 @@
     <div class="container">
 
         <div id="submission_form" class="m-2 p-2">
+            <input type="hidden" id="csrf_token" name="_csrf_token" value="{{ csrf_token }}" />
             <div class="form-group m-3">
                 <label for="cookie-consent" class="input-group-text">Cookie-Consent</label>
                 <div class="input-group">
@@ -104,6 +105,7 @@
 
                 var cookieConsent = $("#cookie-consent").val().trim();
                 var rcCode = $("#rc-code").val().trim();
+                var csrfToken = $("#csrf_token").val().trim();
 
                 // Setting error message.
                 if (cookieConsent === "") {
@@ -122,7 +124,8 @@
                 if (cookieConsent !== "" && rcCode !== "" && rcCode.match(rcCodeRegex)) {
                     var formData = {
                         'cookie-consent': cookieConsent,
-                        'rc-code': rcCode
+                        'rc-code': rcCode,
+                        'csrf_token' : csrfToken
                     };
                     $.ajax({
                         type: 'POST',
