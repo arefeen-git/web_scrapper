@@ -16,7 +16,7 @@ app_company_index:
 app_company_new:
     path: /company/new
     controller: App\Controller\CompanyController::new
-    methods: GET
+    methods: [GET, POST]
     
 app_company_scrap:
     path: /company/scrap

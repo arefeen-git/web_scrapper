@@ -34,53 +34,11 @@
 {% endblock %}
 
 {% block javascripts %}
+    
     {{ parent() }}
-    <!-- Page-specific script for new.html.twig -->
-    <script>
-        // Cookie methods - Vanilla JS -
-        function setCookie(name, value, days) {
-            var expires = "";
-            if (days) {
-                var date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
-            }
-            document.cookie = name + "=" + (value || "") + expires + "; path=/";
-        }
-
-        function getCookie(name) {
-            var nameEQ = name + "=";
-            var ca = document.cookie.split(';');
-            for (var i = 0; i < ca.length; i++) {
-                var c = ca[i];
-                while (c.charAt(0) == ' ')
-                    c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) == 0)
-                    return c.substring(nameEQ.length, c.length);
-            }
-            return null;
-        }
-
-        function removeCookie(name) {
-            document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-        }
-    </script>
 
     <script>
-        // For cookie consent, as that is a large string. Cookie allows only 4096 bytes.
-        function saveToLocalStorage(key, data) {
-            localStorage.setItem(key, data);
-        }
-        function retrieveFromLocalStorage(key) {
-            return localStorage.getItem(key);
-        }
-        function removeFromLocalStorage(key) {
-            localStorage.removeItem(key);
-        }
-
-    </script>
-
-    <script>
+        
         $(function () {
             //Check if Cookie Set, then set the value to input fields.
             let cookie_rc = getCookie('rc-code');
@@ -125,7 +83,7 @@
                     var formData = {
                         'cookie-consent': cookieConsent,
                         'rc-code': rcCode,
-                        'csrf_token' : csrfToken
+                        'csrf_token': csrfToken
                     };
                     $.ajax({
                         type: 'POST',
@@ -156,5 +114,47 @@
                 }
             });
         });
+
+        // Cookie methods - Vanilla JS -
+        function setCookie(name, value, days) {
+            var expires = "";
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ')
+                    c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0)
+                    return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function removeCookie(name) {
+            document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        }
+
+        // For cookie consent, as that is a large string. Cookie allows only 4096 bytes.
+        function saveToLocalStorage(key, data) {
+            localStorage.setItem(key, data);
+        }
+        
+        function retrieveFromLocalStorage(key) {
+            return localStorage.getItem(key);
+        }
+        
+        function removeFromLocalStorage(key) {
+            localStorage.removeItem(key);
+        }
+
     </script>
 {% endblock %}

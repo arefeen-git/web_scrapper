@@ -17,6 +17,13 @@ use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 #[Route('/company')]
 class CompanyController extends AbstractController {
 
+    private EntityManagerInterface $entityManager;
+
+    // Constructor to inject EntityManagerInterface
+    public function __construct(EntityManagerInterface $entityManager) {
+        $this->entityManager = $entityManager;
+    }
+
     #[Route('/', name: 'app_company_index', methods: ['GET'])]
     public function index(CompanyRepository $companyRepository): Response {
         return $this->render('company/index.html.twig', [
@@ -29,15 +36,14 @@ class CompanyController extends AbstractController {
 
         $submittedToken = $request->request->get('csrf_token');
         $csrfToken = $request->getSession()->get('company_item_csrf_token');
-        
+
         if ($submittedToken !== $csrfToken) {
             $responseData = [
                 'message' => 'Multiversal Request Not Allowed!!! Contact Doromammu for Bargain',
             ];
-            
+
             $statusCode = JsonResponse::HTTP_UNAUTHORIZED; // 401
             return new JsonResponse($responseData, $statusCode);
-            
         } else {
             $cookie_consent = $request->request->get('cookie-consent');
             $rc_code = $request->request->get('rc-code');
@@ -45,9 +51,11 @@ class CompanyController extends AbstractController {
             $scraperUtility = new ScraperUtility();
             $company_details = $scraperUtility->start_scraping($rc_code, $cookie_consent);
 
+            $store_new = $this->add_new($company_details);
+
             $responseData = [
                 'message' => 'Scraping completed successfully',
-                'company_details' => $company_details
+                'company_id' => $store_new
             ];
 
             // Set the appropriate status code
@@ -56,12 +64,38 @@ class CompanyController extends AbstractController {
         }
     }
 
+    public function add_new($company_details): int {
+        // Create a new Company entity and set its properties
+        $company = new Company();
+        $company->setRegistrationCode($company_details['registration_code']);
+        $company->setName($company_details['name']);
+        
+        $details = [
+            "vat"       => $company_details['vat'],
+            "address"   => $company_details['address'],
+            "mobile"    => $company_details['mobile']
+        ];
+        
+        $company->setDetails($details);
+        $company->setFinances($company_details['finances']);
+        $company->setDeleted(0);
+        
+//        print_r($company_details['finances']); die();
+        
+        $this->entityManager->persist($company);
+        $this->entityManager->flush();
+        
+        $company_id = $company->getId();
+
+        return $company_id;
+    }
+
     #[Route('/new', name: 'app_company_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, TokenGeneratorInterface $tokenGenerator): Response {
         $company = new Company();
         $form = $this->createForm(CompanyType::class, $company);
         $form->handleRequest($request);
-        
+
         // Generate and store the CSRF token in the session
         $token = $tokenGenerator->generateToken();
         $request->getSession()->set('company_item_csrf_token', $token);
