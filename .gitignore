@@ -8,10 +8,10 @@
 /var/
 /vendor/
 /.env
-/compoer.lock
-/symfony.lock
+compoer.lock
+symfony.lock
 .gitignore.swp
-/nbproject/
+nbproject/
 package-lock.json
 ###< symfony/framework-bundle ###
 
