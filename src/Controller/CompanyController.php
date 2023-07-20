@@ -6,8 +6,10 @@ use App\Entity\Company;
 use App\Form\CompanyType;
 use App\Repository\CompanyRepository;
 use App\Utility\ScraperUtility;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,7 +43,7 @@ class CompanyController extends AbstractController {
 
         if ($submittedToken !== $csrfToken) {
             $responseData = [
-                'message' => 'Multiversal Request Not Allowed!!! Contact Doromammu for Bargain',
+                'message' => 'CSRF Token Mismatch : Multiversal Request Not Allowed!!! Contact Doromammu for Bargain',
             ];
 
             $statusCode = JsonResponse::HTTP_UNAUTHORIZED; // 401
@@ -50,7 +52,7 @@ class CompanyController extends AbstractController {
             $cookie_consent = $request->request->get('cookie-consent');
             $rc_code = $request->request->get('rc-code');
 
-            // Get the CompanyRepository from the container
+            // Get the CompanyRepository from the container.
             $companyRepository = $this->doctrine->getRepository(Company::class);
 
             // Check if the registration code already exists
@@ -59,7 +61,7 @@ class CompanyController extends AbstractController {
                     'message' => 'Company Already Exists',
                 ];
 
-                // Set the appropriate status code
+                // Set the appropriate status code.
                 $statusCode = JsonResponse::HTTP_BAD_REQUEST; // 200
                 return new JsonResponse($responseData, $statusCode);
             }
@@ -96,8 +98,6 @@ class CompanyController extends AbstractController {
         $company->setFinances($company_details['finances']);
         $company->setDeleted(0);
 
-//        print_r($company_details['finances']); die();
-
         $this->entityManager->persist($company);
         $this->entityManager->flush();
 
@@ -107,7 +107,7 @@ class CompanyController extends AbstractController {
     }
 
     #[Route('/new', name: 'app_company_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, TokenGeneratorInterface $tokenGenerator): Response {
+    public function new(Request $request, TokenGeneratorInterface $tokenGenerator): Response {
         $company = new Company();
         $form = $this->createForm(CompanyType::class, $company);
         $form->handleRequest($request);
@@ -115,13 +115,6 @@ class CompanyController extends AbstractController {
         // Generate and store the CSRF token in the session
         $token = $tokenGenerator->generateToken();
         $request->getSession()->set('company_item_csrf_token', $token);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($company);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_company_index', [], Response::HTTP_SEE_OTHER);
-        }
 
         return $this->render('company/new.html.twig', [
                     'company' => $company,

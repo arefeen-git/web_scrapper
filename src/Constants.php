@@ -48,4 +48,6 @@ class Constants {
             'NODE_TO_TRAVEL'    => 9
         ],
     ];
+    
+    public const RESPONSE_LIMITER = 5;
 }
