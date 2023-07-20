@@ -24,7 +24,7 @@ class HomeController extends AbstractController {
 
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
-        $cookie_consent = 'CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%223e8df365-6f2c-4c1a-80ad-d5c902d78b97%22%7D; _gid=GA1.2.857438531.1689414271; PHPSESSID=0m4k33i7vajp1fne0tsdu6kul4; cf_clearance=4lrjGdXEGNLmP.lEfKifoI6L11XaV7VX0taYpRL5hGA-1689722273-0-250.2.1689722273; _gat_UA-724652-3=1; _ga_D931ERQW91=GS1.1.1689717974.35.1.1689722305.0.0.0; _ga=GA1.1.1096950485.1688928483';
+        $cookie_consent = 'CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%223e8df365-6f2c-4c1a-80ad-d5c902d78b97%22%7D; _gid=GA1.2.857438531.1689414271; PHPSESSID=5b6573fol6l6qjhoc0tqo34e0i; cf_clearance=pQ7dqFbDHvJZtn8ArG.onzOz0hCbpDvisFudQ0G.Fqg-1689864040-0-250.2.1689864040; _gat_UA-724652-3=1; _ga=GA1.1.1096950485.1688928483; _ga_D931ERQW91=GS1.1.1689864030.49.1.1689864043.0.0.0';
         $user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36';
 
         // Set request headers
@@ -48,7 +48,7 @@ class HomeController extends AbstractController {
             ],
         ];
 
-        $context = stream_context_create($options);
+        $context = stream_context_create($options);        
         $html_chunk = file_get_contents($url, false, $context);
         $html_array = explode(PHP_EOL, $html_chunk);
 
@@ -110,26 +110,60 @@ class HomeController extends AbstractController {
         $company_details = [];
 
         foreach (Constants::IDENTIFY_COMPANY_DETAILS as $info => $props) {
+            
+            // Set default value.
+            $company_details[strtolower($info)] = Constants::MESSAGE_NA;
+            
             foreach ($company_profile_html_array as $key => $val) {
                 if (strpos($val, $props['IDENTIFYING_KEY']) !== false) {
                     $info_index = $key + $props['NODE_TO_TRAVEL'];
+                    $company_details[strtolower($info)] = true; // Set Later.
                     break;
                 }
             }
+            
+            /*
+             * Arefeen : Required info should be in this element. 
+             * Some info might be missing, so use single condition block for each individual info.
+             * Don't use only else as some companies doesn't show vat, and use different formats regarding mobile.
+             */
+            
+            $dom->loadHTML($company_profile_html_array[$info_index]);
 
-            if ($props['IDENTIFYING_KEY'] == Constants::ADDRESS) {
+            if ($info == Constants::NAME && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
+                $info_element = $dom->getElementsByTagName($props['IDENTIFYING_NODE']);
+                if (!empty($info_element)) {
+                    $info_obj = $info_element->item(0);
+                    $company_details[strtolower($info)] = str_replace("Company", "", ucwords(strtolower($info_obj->textContent)));
+                }
+            }
+            
+            if ($info == Constants::ADDRESS && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
                 $company_details[strtolower($info)] = $company_profile_html_array[$info_index];
-            } else {
-                $dom->loadHTML($company_profile_html_array[$info_index]);
-                if ($props['IDENTIFYING_KEY'] == Constants::MOBILE) {
-                    // Find the img element that contains mobile no.
-                    $info_element = $dom->getElementsByTagName('img')->item(0);
+            }
+            
+            if ($info == Constants::MOBILE && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
+                // Find the img element that contains mobile no image.
+                $info_element = $dom->getElementsByTagName('img')->item(0);
+                if (!empty($info_element)) {
                     $info_obj = $info_element->getAttribute('src');
                     $company_details[strtolower($info)] = Constants::SCRAP_FROM . $info_obj;
-                } else {
-                    $info_element = $dom->getElementsByTagName($props['IDENTIFYING_NODE']);
+                }
+            }
+            
+            if ($info == Constants::RC && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
+                $info_element = $dom->getElementsByTagName($props['IDENTIFYING_NODE']);
+                if (!empty($info_element)) {
                     $info_obj = $info_element->item(0);
-                    $company_details[strtolower($info)] = ($info == Constants::NAME) ? str_replace("Company", "", ucwords(strtolower($info_obj->textContent))) : $info_obj->textContent;
+                    $company_details[strtolower($info)] = $info_obj->textContent;
+                }
+            }
+
+            if ($info == Constants::VAT && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
+                $info_element = $dom->getElementsByTagName($props['IDENTIFYING_NODE']);
+                if (!empty($info_element)) {
+                    $info_obj = $info_element->item(0);
+                    $company_details[strtolower($info)] = $info_obj->textContent;
                 }
             }
         }

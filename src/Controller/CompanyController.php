@@ -7,6 +7,7 @@ use App\Form\CompanyType;
 use App\Repository\CompanyRepository;
 use App\Utility\ScraperUtility;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,10 +19,11 @@ use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 class CompanyController extends AbstractController {
 
     private EntityManagerInterface $entityManager;
+    private ManagerRegistry $doctrine;
 
-    // Constructor to inject EntityManagerInterface
-    public function __construct(EntityManagerInterface $entityManager) {
+    public function __construct(EntityManagerInterface $entityManager, ManagerRegistry $doctrine) {
         $this->entityManager = $entityManager;
+        $this->doctrine = $doctrine;
     }
 
     #[Route('/', name: 'app_company_index', methods: ['GET'])]
@@ -48,6 +50,20 @@ class CompanyController extends AbstractController {
             $cookie_consent = $request->request->get('cookie-consent');
             $rc_code = $request->request->get('rc-code');
 
+            // Get the CompanyRepository from the container
+            $companyRepository = $this->doctrine->getRepository(Company::class);
+
+            // Check if the registration code already exists
+            if ($companyRepository->isRegistrationCodeExists($rc_code)) {
+                $responseData = [
+                    'message' => 'Company Already Exists',
+                ];
+
+                // Set the appropriate status code
+                $statusCode = JsonResponse::HTTP_BAD_REQUEST; // 200
+                return new JsonResponse($responseData, $statusCode);
+            }
+
             $scraperUtility = new ScraperUtility();
             $company_details = $scraperUtility->start_scraping($rc_code, $cookie_consent);
 
@@ -69,22 +85,22 @@ class CompanyController extends AbstractController {
         $company = new Company();
         $company->setRegistrationCode($company_details['registration_code']);
         $company->setName($company_details['name']);
-        
+
         $details = [
-            "vat"       => $company_details['vat'],
-            "address"   => $company_details['address'],
-            "mobile"    => $company_details['mobile']
+            "vat" => $company_details['vat'],
+            "address" => $company_details['address'],
+            "mobile" => $company_details['mobile']
         ];
-        
+
         $company->setDetails($details);
         $company->setFinances($company_details['finances']);
         $company->setDeleted(0);
-        
+
 //        print_r($company_details['finances']); die();
-        
+
         $this->entityManager->persist($company);
         $this->entityManager->flush();
-        
+
         $company_id = $company->getId();
 
         return $company_id;

@@ -107,26 +107,60 @@ class ScraperUtility extends AbstractController {
         $company_details = [];
 
         foreach (Constants::IDENTIFY_COMPANY_DETAILS as $info => $props) {
+            
+            // Set default value.
+            $company_details[strtolower($info)] = Constants::MESSAGE_NA;
+            
             foreach ($company_profile_html_array as $key => $val) {
                 if (strpos($val, $props['IDENTIFYING_KEY']) !== false) {
                     $info_index = $key + $props['NODE_TO_TRAVEL'];
+                    $company_details[strtolower($info)] = true; // Set Later.
                     break;
                 }
             }
+            
+            /*
+             * Arefeen : Required info should be in this element. 
+             * Some info might be missing, so use single condition block for each individual info.
+             * Don't use only else as some companies doesn't show vat, and use different formats regarding mobile.
+             */
+            
+            $dom->loadHTML($company_profile_html_array[$info_index]);
 
-            if ($props['IDENTIFYING_KEY'] == Constants::ADDRESS) {
+            if ($info == Constants::NAME && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
+                $info_element = $dom->getElementsByTagName($props['IDENTIFYING_NODE']);
+                if (!empty($info_element)) {
+                    $info_obj = $info_element->item(0);
+                    $company_details[strtolower($info)] = str_replace("Company", "", ucwords(strtolower($info_obj->textContent)));
+                }
+            }
+            
+            if ($info == Constants::ADDRESS && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
                 $company_details[strtolower($info)] = $company_profile_html_array[$info_index];
-            } else {
-                $dom->loadHTML($company_profile_html_array[$info_index]);
-                if ($props['IDENTIFYING_KEY'] == Constants::MOBILE) {
-                    // Find the img element that contains mobile no.
-                    $info_element = $dom->getElementsByTagName('img')->item(0);
+            }
+            
+            if ($info == Constants::MOBILE && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
+                // Find the img element that contains mobile no image.
+                $info_element = $dom->getElementsByTagName('img')->item(0);
+                if (!empty($info_element)) {
                     $info_obj = $info_element->getAttribute('src');
                     $company_details[strtolower($info)] = Constants::SCRAP_FROM . $info_obj;
-                } else {
-                    $info_element = $dom->getElementsByTagName($props['IDENTIFYING_NODE']);
+                }
+            }
+            
+            if ($info == Constants::RC && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
+                $info_element = $dom->getElementsByTagName($props['IDENTIFYING_NODE']);
+                if (!empty($info_element)) {
                     $info_obj = $info_element->item(0);
-                    $company_details[strtolower($info)] = ($info == Constants::NAME) ? str_replace("Company", "", ucwords(strtolower($info_obj->textContent))) : $info_obj->textContent;
+                    $company_details[strtolower($info)] = $info_obj->textContent;
+                }
+            }
+
+            if ($info == Constants::VAT && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
+                $info_element = $dom->getElementsByTagName($props['IDENTIFYING_NODE']);
+                if (!empty($info_element)) {
+                    $info_obj = $info_element->item(0);
+                    $company_details[strtolower($info)] = $info_obj->textContent;
                 }
             }
         }
