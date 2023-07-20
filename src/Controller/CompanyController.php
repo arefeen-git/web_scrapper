@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Company;
 use App\Form\CompanyType;
-use App\Repository\CompanyRepository;
 use App\Utility\ScraperUtility;
+use App\Service\CompanyService;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -22,16 +22,29 @@ class CompanyController extends AbstractController {
 
     private EntityManagerInterface $entityManager;
     private ManagerRegistry $doctrine;
+    private CompanyService $companyService;
 
-    public function __construct(EntityManagerInterface $entityManager, ManagerRegistry $doctrine) {
+    public function __construct(
+            EntityManagerInterface $entityManager,
+            ManagerRegistry $doctrine,
+            CompanyService $companyService
+    ) {
         $this->entityManager = $entityManager;
         $this->doctrine = $doctrine;
+        $this->companyService = $companyService;
     }
 
-    #[Route('/', name: 'app_company_index', methods: ['GET'])]
-    public function index(CompanyRepository $companyRepository): Response {
+    #[Route('/company/{pageNo<\d+>?}', name: 'app_company_index', methods: ['GET'])]
+    public function index(CompanyService $companyService, int $pageNo = 1): Response {
+        $companies = $companyService->getCompanyList($pageNo);
+        $company_count = $companyService->numberOfCompanies();
+        
+        if(empty($company_count)){
+            return $this->redirectToRoute('app_company_new');
+        }
+        
         return $this->render('company/index.html.twig', [
-                    'companies' => $companyRepository->findAll(),
+                    'companies' => $companies
         ]);
     }
 

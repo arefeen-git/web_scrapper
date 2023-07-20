@@ -49,7 +49,6 @@
             //Check if Cookie Set, then set the value to input fields.
             let cookie_rc = getCookie('rc-code');
             let cookie_consent = retrieveFromLocalStorage('cookieConsent');
-            ;
 
             if (cookie_rc) {// This means both values should be present in the cookie.
                 $("#cookie-consent").val(cookie_consent);

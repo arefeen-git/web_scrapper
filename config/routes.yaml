@@ -9,7 +9,7 @@ home_test_route:
     methods: GET
     
 app_company_index:
-    path: /company/
+    path: /company/{pageNo<\d+>?}
     controller: App\Controller\CompanyController::index
     methods: GET
     
