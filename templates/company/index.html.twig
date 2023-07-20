@@ -25,8 +25,8 @@
                 <td>{{ company.details ? company.details|json_encode : '' }}</td>
                 <td>{{ company.finances }}</td>
                 <td>
-                    <a href="{{ path('app_company_show', {'id': company.id}) }}">show</a>
-                    <a href="{{ path('app_company_edit', {'id': company.id}) }}">edit</a>
+{#                    <a href="{{ path('app_company_show', {'id': company.id}) }}">show</a>#}
+{#                    <a href="{{ path('app_company_edit', {'id': company.id}) }}">edit</a>#}
                 </td>
             </tr>
         {% else %}
