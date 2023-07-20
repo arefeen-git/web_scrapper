@@ -28,17 +28,23 @@
         </div>
 
 
+        <div style="display: none;" class="alert alert-success" role="alert"></div>
+
+        <div style="display: none;" class="alert alert-danger" role="alert"></div>
+
+        <div style="display: none;" class="alert alert-warning" role="alert"></div>
+
     </div>
 
     {#    <a href="{{ path('app_company_index') }}">back to list</a>#}
 {% endblock %}
 
 {% block javascripts %}
-    
+
     {{ parent() }}
 
     <script>
-        
+
         $(function () {
             //Check if Cookie Set, then set the value to input fields.
             let cookie_rc = getCookie('rc-code');
@@ -89,16 +95,30 @@
                         type: 'POST',
                         url: '/company/scrap',
                         data: formData,
-                        success: function (response) {
+                        success: function (response, status, xhr) {
                             // Set cookie to keep the input fields and then read from them.
                             setCookie('rc-code', rcCode, 1);
 
                             // Cookie consent breaks max char limit. Setting it in parts.
                             saveToLocalStorage('cookieConsent', cookieConsent);
+
+                            // Show the success alert
+                            $('.alert-warning, .alert-danger').hide();
+                            $('.alert-success').text('Scraped and Stored. Check table for more info.').fadeIn().delay(5000).fadeOut();
                         },
-                        error: function (error) {
+                        error: function (xhr, status, error) {
                             removeCookie('rc-code');
                             removeFromLocalStorage('cookieConsent');
+
+                            if (xhr.status === 400) {
+                                // Show the warning alert for status code 400
+                                $('.alert-success, .alert-danger').hide();
+                                $('.alert-warning').text('Company already exists').fadeIn().delay(5000).fadeOut();
+                            } else {
+                                // Show the error alert for any other status code
+                                $('.alert-success, .alert-warning').hide();
+                                $('.alert-danger').text('Bad Request - Something went wrong. Should check/reset the Cookie-consent.').fadeIn().delay(5000).fadeOut();
+                            }
                         },
                         complete: function () {
                             // Re-enable button and hide spinner.
@@ -147,11 +167,11 @@
         function saveToLocalStorage(key, data) {
             localStorage.setItem(key, data);
         }
-        
+
         function retrieveFromLocalStorage(key) {
             return localStorage.getItem(key);
         }
-        
+
         function removeFromLocalStorage(key) {
             localStorage.removeItem(key);
         }
