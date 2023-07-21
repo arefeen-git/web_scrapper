@@ -12,13 +12,28 @@
             <table id = "company_list" class="table table-striped table-bordered">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Registration code</th>
-                        <th>VAT</th>
-                        <th>Address</th>
-                        <th>Mobile</th>
-{#                        <th>Finances</th>#}
-                        <th>Actions</th>
+                        <th class="text-center">Name</th>
+                        <th class="text-center">Registration code</th>
+                        <th class="text-center">VAT</th>
+                        <th class="text-center">Address</th>
+                        <th class="text-center align-items-center">
+                            Mobile 
+                            <svg 
+                                xmlns="http://www.w3.org/2000/svg" 
+                                height="0.875em" 
+                                viewBox="0 0 512 512" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top" 
+                                data-bs-original-title="Complete parent sites Captcha if mobile numbers not visible." <!-- Add the tooltip message as a data attribute -->
+                                >
+                                <!-- Add the title element with the tooltip message -->
+                                <title>Complete parent sites Captcha if mobile numbers not visible.</title>
+
+                                <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM169.8 165.3c7.9-22.3 29.1-37.3 52.8-37.3h58.3c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24V250.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1H222.6c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/>
+                            </svg>
+                        </th>
+                        <th class="text-center">Finances</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -29,7 +44,33 @@
                             <td>{{ company.details ? company.details.address : '' }}</td>
                             <td>{{ company.details ? company.details.vat : '' }}</td>
                             <td class="text-center"><img src="{{ company.details ? company.details.mobile : '' }}" alt="{{ company.name }} Mobile phone" title="{{ company.name }} Mobile phone" class="img-fluid"/></td>
-{#                            <td>{{ company.finances }}</td>#}
+                            {#                            <td>{{ company.finances }}</td>#}
+                            <td class="text-center">
+                                <!-- Button trigger modal -->
+                                <button type="button" class="btn btn-info btn-sm rounded" 
+                                        data-toggle="modal" data-target="#financesModal-{{ company.registration_code }}">
+                                    &euro;
+                                </button>
+                                <!-- Modal -->
+                                <div class="modal fade" id="financesModal-{{ company.registration_code }}" tabindex="-1" role="dialog" aria-labelledby="financesModalLabel-{{ company.registration_code }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="financesModalLabel-{{ company.registration_code }}">Finance Details</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                {{ company.finances|raw }}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
                             <td>
                                 {#                    <a href="{{ path('app_company_show', {'id': company.id}) }}">show</a>#}
                                 {#                    <a href="{{ path('app_company_edit', {'id': company.id}) }}">edit</a>#}
@@ -43,10 +84,15 @@
                 </tbody>
             </table>
         </div>
-                
+
         <div class="text-center">
             <a class="btn btn-primary" href="{{ path('app_company_new') }}">Create new</a>
         </div>
     </div>
 
 {% endblock %}
+{#{% block javascripts %}
+
+    {{ parent() }}
+
+{% endblock %}#}
