@@ -6,10 +6,8 @@ use App\Entity\Company;
 use App\Form\CompanyType;
 use App\Utility\ScraperUtility;
 use App\Service\CompanyService;
-
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
-
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,24 +32,34 @@ class CompanyController extends AbstractController {
         $this->companyService = $companyService;
     }
 
-    #[Route('/company/{pageNo<\d+>?}', name: 'app_company_index', methods: ['GET'])]
+    #[Route('/company/{pageNo<\d+>?}', name: 'app_company_index', methods: ['GET', 'POST'])]
     public function index(Request $request, CompanyService $companyService): Response {
-        // Get the pageNo from the route parameters
-        $pageNo = (int) $request->attributes->get('pageNo', 1);
 
-        // If pageNo is 0, redirect to pageNo 1
-        if ($pageNo === 0) {
-            return $this->redirectToRoute('app_company_index', ['pageNo' => 1]);
-        }
-        $companies = $companyService->getCompanyList($pageNo);
-        $company_count = $companyService->numberOfCompanies();
-        
-        if(empty($company_count)){
-            return $this->redirectToRoute('app_company_new');
+        // Search Request
+        if ($request->isMethod('POST')) {
+            $rcCodes = $request->request->get('rc-codes'); // Get the value of 'rc-codes' from the form submission
+            $companies = $companyService->searchByRegistrationCode($rcCodes);
+        } else {
+            // Get the pageNo from the route parameters.
+            $pageNo = (int) $request->attributes->get('pageNo', 1);
+
+            // If pageNo is 0, redirect to pageNo 1.
+            if ($pageNo === 0) {
+                return $this->redirectToRoute('app_company_index', ['pageNo' => 1]);
+            }
+
+            $company_count = $companyService->numberOfCompanies();
+
+            if (empty($company_count)) {
+                return $this->redirectToRoute('app_company_new');
+            }
+
+            $companies = $companyService->getCompanyList($pageNo);
         }
         
         return $this->render('company/index.html.twig', [
-                    'companies' => $companies
+                    'companies' => !empty($companies['companies']) ? $companies['companies'] : $companies,
+                    'pagination' => !empty($companies['pagination']) ? $companies['pagination'] : []
         ]);
     }
 
@@ -128,17 +136,11 @@ class CompanyController extends AbstractController {
 
     #[Route('/new', name: 'app_company_new', methods: ['GET', 'POST'])]
     public function new(Request $request, TokenGeneratorInterface $tokenGenerator): Response {
-        $company = new Company();
-        $form = $this->createForm(CompanyType::class, $company);
-        $form->handleRequest($request);
-
         // Generate and store the CSRF token in the session
         $token = $tokenGenerator->generateToken();
         $request->getSession()->set('company_item_csrf_token', $token);
 
         return $this->render('company/new.html.twig', [
-                    'company' => $company,
-                    'form' => $form,
                     'csrf_token' => $token
         ]);
     }
@@ -150,7 +152,7 @@ class CompanyController extends AbstractController {
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_company_edit', methods: ['GET', 'POST'])]
+    #[Route('/edit/{registration_code}', name: 'app_company_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Company $company, EntityManagerInterface $entityManager): Response {
         $form = $this->createForm(CompanyType::class, $company);
         $form->handleRequest($request);
@@ -167,9 +169,10 @@ class CompanyController extends AbstractController {
         ]);
     }
 
-    #[Route('/{id}', name: 'app_company_delete', methods: ['POST'])]
+    #[Route('/delete/{registration_code}', name: 'app_company_delete', methods: ['POST'])]
     public function delete(Request $request, Company $company, EntityManagerInterface $entityManager): Response {
         if ($this->isCsrfTokenValid('delete' . $company->getId(), $request->request->get('_token'))) {
+            print_r($company); die();
             $entityManager->remove($company);
             $entityManager->flush();
         }
