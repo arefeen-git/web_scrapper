@@ -58,10 +58,10 @@ class CompanyService {
             'pagination' => [
                 'currentPage' => $pageNo,
                 'previousPage' => $previousPage,
-                'nextPage' => (int)$nextPage,
-                'afterNextPage' => (int)$afterNextPage,
-                'totalCount' => (int)$totalCount,
-                'totalPages' => (int)ceil($totalCount / $responseLimiter),
+                'nextPage' => (int) $nextPage,
+                'afterNextPage' => (int) $afterNextPage,
+                'totalCount' => (int) $totalCount,
+                'totalPages' => (int) ceil($totalCount / $responseLimiter),
             ],
         ];
     }
@@ -73,22 +73,33 @@ class CompanyService {
     }
 
     public function searchByRegistrationCode(string $rc_codes): array {
-        $rc_code_array = explode(",", $rc_codes);
+
+        $rc_code_array = !empty($rc_codes) ? explode(",", $rc_codes) : [];
 
         foreach ($rc_code_array as $key => &$val) {
             $val = (int) trim($val);
         }
 
         $queryBuilder = $this->entityManager->createQueryBuilder();
-        $queryBuilder
-                ->select('c.name', 'c.registration_code', 'c.details', 'c.finances')
-                ->from('App\Entity\Company', 'c')
-                ->where('c.deleted = :deleted')
-                ->setParameter('deleted', 0);
 
-        if (!empty($rc_codes)) {
+        if (empty($rc_code_array)) {
             $queryBuilder
-                    ->andWhere($queryBuilder->expr()->in('c.registration_code', $rc_code_array));
+                    ->select('c.name', 'c.registration_code', 'c.details', 'c.finances')
+                    ->from('App\Entity\Company', 'c')
+                    ->where('c.deleted = :deleted')
+                    ->setParameter('deleted', 0)
+                    ->setMaxResults(Constants::RESPONSE_LIMITER);
+        } else {
+            $queryBuilder
+                    ->select('c.name', 'c.registration_code', 'c.details', 'c.finances')
+                    ->from('App\Entity\Company', 'c')
+                    ->where('c.deleted = :deleted')
+                    ->setParameter('deleted', 0);
+
+            if (!empty($rc_codes)) {
+                $queryBuilder
+                        ->andWhere($queryBuilder->expr()->in('c.registration_code', $rc_code_array));
+            }
         }
 
         $query = $queryBuilder->getQuery();
