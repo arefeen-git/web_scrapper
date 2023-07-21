@@ -25,36 +25,38 @@ class CompanyController extends AbstractController {
     public function __construct(
             EntityManagerInterface $entityManager,
             ManagerRegistry $doctrine,
-            CompanyService $companyService
+            CompanyService $companyService,
+            TokenGeneratorInterface $tokenGenerator
     ) {
         $this->entityManager = $entityManager;
         $this->doctrine = $doctrine;
         $this->companyService = $companyService;
+        $this->tokenGenerator = $tokenGenerator;
     }
 
     #[Route('/company/{pageNo<\d+>?}', name: 'app_company_index', methods: ['GET', 'POST'])]
-    public function index(Request $request, CompanyService $companyService): Response {
+    public function index(Request $request): Response {
 
         // Search Request
         if ($request->isMethod('POST')) {
             $rcCodes = $request->request->get('rc-codes'); // Get the value of 'rc-codes' from the form submission
-            $companies = $companyService->searchByRegistrationCode($rcCodes);
+            $companies = $this->companyService->searchByRegistrationCode($rcCodes);
         } else {
             // Get the pageNo from the route parameters.
             $pageNo = (int) $request->attributes->get('pageNo', 1);
 
             // If pageNo is 0, redirect to pageNo 1.
-            if ($pageNo === 0) {
+            if (empty($pageNo)) {
                 return $this->redirectToRoute('app_company_index', ['pageNo' => 1]);
             }
 
-            $company_count = $companyService->numberOfCompanies();
+            $company_count = $this->companyService->numberOfCompanies();
 
             if (empty($company_count)) {
                 return $this->redirectToRoute('app_company_new');
             }
 
-            $companies = $companyService->getCompanyList($pageNo);
+            $companies = $this->companyService->getCompanyList($pageNo);
         }
         
         return $this->render('company/index.html.twig', [
@@ -110,6 +112,7 @@ class CompanyController extends AbstractController {
         }
     }
 
+    //Move this to service
     public function add_new($company_details): int {
         // Create a new Company entity and set its properties
         $company = new Company();
@@ -135,20 +138,13 @@ class CompanyController extends AbstractController {
     }
 
     #[Route('/new', name: 'app_company_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, TokenGeneratorInterface $tokenGenerator): Response {
+    public function new(Request $request): Response {
         // Generate and store the CSRF token in the session
-        $token = $tokenGenerator->generateToken();
+        $token = $this->tokenGenerator->generateToken();
         $request->getSession()->set('company_item_csrf_token', $token);
 
         return $this->render('company/new.html.twig', [
                     'csrf_token' => $token
-        ]);
-    }
-
-    #[Route('/{id}', name: 'app_company_show', methods: ['GET'])]
-    public function show(Company $company): Response {
-        return $this->render('company/show.html.twig', [
-                    'company' => $company,
         ]);
     }
 
