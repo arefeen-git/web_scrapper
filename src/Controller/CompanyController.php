@@ -35,7 +35,14 @@ class CompanyController extends AbstractController {
     }
 
     #[Route('/company/{pageNo<\d+>?}', name: 'app_company_index', methods: ['GET'])]
-    public function index(CompanyService $companyService, int $pageNo = 1): Response {
+    public function index(Request $request, CompanyService $companyService): Response {
+        // Get the pageNo from the route parameters
+        $pageNo = (int) $request->attributes->get('pageNo', 1);
+
+        // If pageNo is 0, redirect to pageNo 1
+        if ($pageNo === 0) {
+            return $this->redirectToRoute('app_company_index', ['pageNo' => 1]);
+        }
         $companies = $companyService->getCompanyList($pageNo);
         $company_count = $companyService->numberOfCompanies();
         
