@@ -11,12 +11,22 @@ home_test_route:
 app_company_index:
     path: /company/{pageNo<\d+>?}
     controller: App\Controller\CompanyController::index
-    methods: GET
+    methods: [GET, POST]
     
 app_company_new:
     path: /company/new
     controller: App\Controller\CompanyController::new
     methods: [GET, POST]
+
+app_company_edit:
+    path: /company/edit/{registration_code}
+    controller: App\Controller\CompanyController::edit
+    methods: [GET, POST]
+    
+app_company_delete:
+    path: /company/{registration_code}/delete
+    controller: App\Controller\CompanyController::delete
+    methods: [POST]
     
 app_company_scrap:
     path: /company/scrap
