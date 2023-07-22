@@ -14,6 +14,12 @@
             </div>
         {% endif %}
 
+        <div class="row p-2 m-2 align-items-center d-flex justify-content-center">
+            <div style="display: none;" class="alert alert-success" role="alert"></div>
+            <div style="display: none;" class="alert alert-danger" role="alert"></div>
+            <div style="display: none;" class="alert alert-warning" role="alert"></div>
+        </div>
+
         <div class="mx-auto m-2 p-2" style="width: 350px;">
             <h2 class="text-center">Company list</h2>
         </div>
@@ -83,7 +89,7 @@
                                         data-toggle="modal" data-target="#financesModal-{{ company.registration_code }}">
                                     &euro;
                                 </button>
-                                <!-- Modal -->
+                                <!-- Finances Modal -->
                                 <div class="modal fade" id="financesModal-{{ company.registration_code }}" tabindex="-1" role="dialog" aria-labelledby="financesModalLabel-{{ company.registration_code }}" aria-hidden="true">
                                     <div class="modal-dialog modal-lg" role="document">
                                         <div class="modal-content">
@@ -107,9 +113,10 @@
                                 <a type="button" class="btn btn-info btn-xs" href="{{ path('app_company_edit', {'registration_code': company.registration_code}) }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" height="0.75em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M441 58.9L453.1 71c9.4 9.4 9.4 24.6 0 33.9L424 134.1 377.9 88 407 58.9c9.4-9.4 24.6-9.4 33.9 0zM209.8 256.2L344 121.9 390.1 168 255.8 302.2c-2.9 2.9-6.5 5-10.4 6.1l-58.5 16.7 16.7-58.5c1.1-3.9 3.2-7.5 6.1-10.4zM373.1 25L175.8 222.2c-8.7 8.7-15 19.4-18.3 31.1l-28.6 100c-2.4 8.4-.1 17.4 6.1 23.6s15.2 8.5 23.6 6.1l100-28.6c11.8-3.4 22.5-9.7 31.1-18.3L487 138.9c28.1-28.1 28.1-73.7 0-101.8L474.9 25C446.8-3.1 401.2-3.1 373.1 25zM88 64C39.4 64 0 103.4 0 152V424c0 48.6 39.4 88 88 88H360c48.6 0 88-39.4 88-88V312c0-13.3-10.7-24-24-24s-24 10.7-24 24V424c0 22.1-17.9 40-40 40H88c-22.1 0-40-17.9-40-40V152c0-22.1 17.9-40 40-40H200c13.3 0 24-10.7 24-24s-10.7-24-24-24H88z"/></svg>
                                 </a>
-                                <a type="button" class="btn btn-danger btn-xs" href="{{ path('app_company_delete', {'registration_code': company.registration_code}) }}">
+                                <button type="button" class="btn btn-danger btn-xs" id="del-company-{{ company.registration_code }}" onclick="showDeleteModal({{company.registration_code}});" del-url="{{ path('app_company_delete', {'registration_code': company.registration_code}) }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" height="0.75em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M170.5 51.6L151.5 80h145l-19-28.4c-1.5-2.2-4-3.6-6.7-3.6H177.1c-2.7 0-5.2 1.3-6.7 3.6zm147-26.6L354.2 80H368h48 8c13.3 0 24 10.7 24 24s-10.7 24-24 24h-8V432c0 44.2-35.8 80-80 80H112c-44.2 0-80-35.8-80-80V128H24c-13.3 0-24-10.7-24-24S10.7 80 24 80h8H80 93.8l36.7-55.1C140.9 9.4 158.4 0 177.1 0h93.7c18.7 0 36.2 9.4 46.6 24.9zM80 128V432c0 17.7 14.3 32 32 32H336c17.7 0 32-14.3 32-32V128H80zm80 64V400c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0V400c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0V400c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16z"/></svg>
-                                </a>
+                                </button>
+
                             </td>
                         </tr>
                     {% else %}
@@ -164,6 +171,26 @@
             </div>
         {% endif %}
 
+        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="delete-company" name="delete-company" value="" />
+                        Are you sure you want to delete this company?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
 
@@ -173,7 +200,13 @@
     {{ parent() }}
 
     <script>
+        function showDeleteModal(registration_code) {
+            $('#delete-company').val(registration_code);
+            $('#deleteConfirmationModal').modal('show');
+        }
+
         $(function () {
+
             $('#searchForm').submit(function (event) {
                 // Prevent the form from submitting by default
                 event.preventDefault();
@@ -208,6 +241,38 @@
                 } else {
                     this.submit();
                 }
+            });
+
+            $("#confirmDeleteBtn").click(function () {
+                let registration_code = $("#delete-company").val();
+                let deleteUrl = $('#del-company-' + registration_code).attr("del-url");
+
+                // Send an AJAX request to delete the company
+                $.ajax({
+                    type: 'POST',
+                    url: deleteUrl,
+                    data: {
+                        'csrf_token': '{{ csrf_token }}'
+                    },
+                    success: function (response) {
+                        // Reload the page for new table.
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        if (xhr.status === 400) {
+                            // Show the warning alert for status code 400
+                            $('.alert-success, .alert-danger').hide();
+                            $('.alert-warning').text('Company does not exist').fadeIn().delay(3000).fadeOut();
+                        } else {
+                            // Show the error alert for any other status code
+                            $('.alert-success, .alert-warning').hide();
+                            $('.alert-danger').text('Bad Request - Something went wrong. Reload the page and try again.').fadeIn().delay(3000).fadeOut();
+                        }
+                    }
+                });
+
+                // Close the modal after confirming deletion
+                $('#deleteConfirmationModal').modal('hide');
             });
         });
     </script>

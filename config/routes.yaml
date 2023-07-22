@@ -8,6 +8,11 @@ home_test_route:
     controller: App\Controller\HomeController::test
     methods: GET
     
+app_company:
+    path: /company
+    controller: App\Controller\CompanyController::index
+    methods: [GET, POST]
+    
 app_company_index:
     path: /company/list/{pageNo<\d+>?}
     controller: App\Controller\CompanyController::index
@@ -24,7 +29,7 @@ app_company_edit:
     methods: [GET, POST]
     
 app_company_delete:
-    path: /company/{registration_code}/delete
+    path: /company/delete/{registration_code}
     controller: App\Controller\CompanyController::delete
     methods: [POST]
     

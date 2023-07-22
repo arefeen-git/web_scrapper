@@ -110,10 +110,10 @@ class CompanyService {
 
     public function update(array $formData): bool {
         $rc_code = $formData['registration_code'];
-        $company = $this->companyRepository->findOneBy(['registration_code' => $rc_code]);
+        $company = $this->companyRepository->findOneBy(['registration_code' => $rc_code, 'deleted' => 0]);
 
-        if (!$company) {
-            throw new NotFoundHttpException('No Company found for registration code ' . $rc_code);
+        if (empty($company)) {
+            return false;
         }
 
         $company->setName($formData['name']);
@@ -125,6 +125,26 @@ class CompanyService {
 
         $currentDateTime = new \DateTimeImmutable();
         $company->setUpdatedAt($currentDateTime);
+        
+
+        try {
+            $this->entityManager->flush();
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+    
+    public function delete(int $registration_code): bool {
+        $company = $this->companyRepository->findOneBy(['registration_code' => $registration_code, 'deleted' => 0]);
+
+        if (empty($company)) {
+            return false;
+        }
+
+        $company->setDeleted(true);
+        $currentDateTime = new \DateTimeImmutable();
+        $company->setDeletedAt($currentDateTime);
         
 
         try {
