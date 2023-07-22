@@ -21,6 +21,7 @@ class CompanyController extends AbstractController {
     private EntityManagerInterface $entityManager;
     private ManagerRegistry $doctrine;
     private CompanyService $companyService;
+    private TokenGeneratorInterface $tokenGenerator;
 
     public function __construct(
             EntityManagerInterface $entityManager,
@@ -59,9 +60,16 @@ class CompanyController extends AbstractController {
             $companies = $this->companyService->getCompanyList($pageNo);
         }
 
+        $msg = !empty($request->getSession()->get('msg')) ? $request->getSession()->get('msg') : null;
+
+        if (!empty($msg)) {
+            $request->getSession()->remove('msg');
+        }
+
         return $this->render('company/index.html.twig', [
                     'companies' => !empty($companies['companies']) ? $companies['companies'] : $companies,
-                    'pagination' => !empty($companies['pagination']) ? $companies['pagination'] : []
+                    'pagination' => !empty($companies['pagination']) ? $companies['pagination'] : [],
+                    'msg' => $msg
         ]);
     }
 
@@ -149,18 +157,39 @@ class CompanyController extends AbstractController {
     }
 
     #[Route('/edit/{registration_code}', name: 'app_company_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Company $company): Response {
+    public function edit(Request $request): Response {
         $rcCode = $request->attributes->get('registration_code');
-        
+
         if ($request->isMethod('POST') && !empty($rcCode)) {
-            $formData = $request->request->all();
-            $formData['registration_code'] = $rcCode;
-            
-            $this->companyService->update($formData);
-            
+
+            $submittedToken = $request->request->get('csrf_token');
+            $csrfToken = $request->getSession()->get('company_item_csrf_token');
+
+            // Match token.
+            if ($submittedToken == $csrfToken) {
+                $formData = $request->request->all();
+
+                unset($formData['csrf_token']);
+
+                $formData['registration_code'] = $rcCode;
+
+                if ($this->companyService->update($formData)) {
+                    $request->getSession()->set('msg', 'Successfully Updated.');
+                    return $this->redirectToRoute('app_company_index', ['pageNo' => 1]);
+                } else {
+                    $request->getSession()->set('msg', 'Update Failed.');
+                    return $this->redirectToRoute('app_company_edit', ['registration_code' => $rcCode]);
+                }
+            } else {
+                $request->getSession()->set('msg', 'Update Failed: Token Mismatch.');
+                return $this->redirectToRoute('app_company_edit', ['registration_code' => $rcCode]);
+            }
+
             return $this->redirectToRoute('app_company_index', ['pageNo' => 1]);
-        }
-        else{
+        } else {
+
+            $token = $this->tokenGenerator->generateToken();
+            $request->getSession()->set('company_item_csrf_token', $token);
 
             if (!empty($rcCode)) {
                 $company = $this->companyService->searchByRegistrationCode($rcCode);
@@ -168,11 +197,17 @@ class CompanyController extends AbstractController {
                 return $this->redirectToRoute('app_company_index', ['pageNo' => 1]);
             }
         }
-        
-//        print_r($company); die();
+
+        $msg = !empty($request->getSession()->get('msg')) ? $request->getSession()->get('msg') : null;
+
+        if (!empty($msg)) {
+            $request->getSession()->remove('msg');
+        }
 
         return $this->render('company/edit.html.twig', [
-                    'company' => !empty($company[0]) ? $company[0] : []
+                    'company' => !empty($company[0]) ? $company[0] : [],
+                    'csrf_token' => $token,
+                    'msg' => $msg
         ]);
     }
 
