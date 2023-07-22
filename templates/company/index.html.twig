@@ -4,7 +4,7 @@
 
 {% block body %}
     <div class="container-fluid">
-        
+
         {% if msg %}
             <div class="alert alert-info alert-dismissible fade show p-2 m-2" role="alert">
                 {{ msg }}
@@ -13,23 +13,24 @@
                 </button>
             </div>
         {% endif %}
-        
+
         <div class="mx-auto m-2 p-2" style="width: 350px;">
             <h2 class="text-center">Company list</h2>
         </div>
 
         <div class="row pl-3">
             <div class="col-md-8">
-                <form action="{{ path('app_company_index') }}" method="post"> <!-- Add the form tag and set the action attribute -->
+                <form id="searchForm" action="{{ path('app_company_index') }}" method="post">
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <button class="btn btn-info" type="submit" id="start_searching"> <!-- Change the button type to "submit" -->
+                                <button class="btn btn-info" type="submit" id="start_searching">
                                     <span id="search">Search</span>
                                 </button>
                             </div>
                             <input id="rc-codes" name="rc-codes" type="text" class="form-control" placeholder="Registration Code : 304565690, 306019423, 300515252" aria-label="Registration Code" aria-describedby="start_searching">
                         </div>
+                        <div id="rc-code-error" class="text-danger m-2 p-2"></div>
                     </div>
                 </form>
             </div>
@@ -166,8 +167,49 @@
     </div>
 
 {% endblock %}
-{#{% block javascripts %}
+{% block javascripts %}
 
     {{ parent() }}
 
-{% endblock %}#}
+    <script>
+        $(function () {
+            $('#searchForm').submit(function (event) {
+                // Prevent the form from submitting by default
+                event.preventDefault();
+
+                $("#rc-code-error").text("");
+
+                // Get the value of the "rc-codes" input field
+                let rcCodes = $('#rc-codes').val().trim();
+                let rcCodesRegex = /^\d{9}$/;
+                let error_msg = '';
+
+                if (rcCodes === '') {
+                    error_msg = "Search value is required (9 digit Registration code).";
+                } else {
+                    if (rcCodes.includes(',')) {
+                        let rc_code_array = rcCodes.split(",");
+                        rc_code_array.map((val) => {
+                            let tmp_val = val.trim();
+                            if (!rcCodesRegex.test(tmp_val)) {
+                                error_msg = 'One or more Registration Code is not valid.';
+                            }
+                        });
+                    } else {
+                        if (!rcCodesRegex.test(rcCodes)) {
+                            error_msg = 'Registration code must be of 9 digits.';
+                        }
+                    }
+                }
+                
+                if (error_msg !== ''){
+                    $("#rc-code-error").text(error_msg);
+                }
+                else{
+                    this.submit();
+                }
+            });
+        });
+    </script>
+
+{% endblock %}
