@@ -107,4 +107,25 @@ class CompanyService {
 
         return $companies;
     }
+
+    public function update(array $formData) {
+        $rc_code = $formData['registration_code'];
+        $company = $this->companyRepository->findOneBy(['registration_code' => $rc_code]);
+
+        if (!$company) {
+            throw new NotFoundHttpException('No Company found for registration code ' . $rc_code);
+        }
+
+        $company->setName($formData['name']);
+        
+        $details = $company->getDetails();
+        $details['vat'] = $formData['vat'];
+        $details['address'] = $formData['address'];
+        $company->setDetails($details);
+        
+        $currentDateTime = new \DateTimeImmutable();
+        $company->setUpdatedAt($currentDateTime);
+
+        $this->entityManager->flush();
+    }
 }

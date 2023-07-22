@@ -1,13 +1,40 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Company{% endblock %}
+{% block title %}Company List{% endblock %}
 
 {% block body %}
-    <h1>Edit Company</h1>
+    <div class="container">
+        <div class="mx-auto m-2 p-2" style="width: 350px;">
+            <h2 class="text-center">Company Details</h2>
+        </div>
 
-    {{ include('company/_form.html.twig', {'button_label': 'Update'}) }}
+        <form method="post" action="{{ path('app_company_edit', {'registration_code': company.registration_code}) }}">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" class="form-control" id="name" name="name" aria-describedby="name" placeholder="Enter Name" value="{{ company.name }}">
+            </div>
+            <div class="form-group">
+                <label for="vat">VAT</label>
+                <input type="text" class="form-control" id="vat" name="vat" aria-describedby="vat" placeholder="Enter VAT no." value="{{ company.details ? company.details.vat : '' }}">
+            </div>
+            <div class="form-group">
+                <label for="address">Address</label>
+                <input type="text" class="form-control" id="address" name="address" aria-describedby="address" placeholder="Enter Address" value="{{ company.details ? company.details.address : '' }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
 
-    <a href="{{ path('app_company_index') }}">back to list</a>
+        {#<td>{{ company.name }}</td>
+                        <td>{{ company.registration_code }}</td>
+                        <td>{{ company.details ? company.details.address : '' }}</td>
+                        <td>{{ company.details ? company.details.vat : '' }}</td>#}
 
-    {{ include('company/_delete_form.html.twig') }}
+
+    </div>
+
 {% endblock %}
+{#{% block javascripts %}
+
+    {{ parent() }}
+
+{% endblock %}#}

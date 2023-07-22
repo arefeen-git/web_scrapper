@@ -39,7 +39,7 @@ class CompanyController extends AbstractController {
 
         // Search Request
         if ($request->isMethod('POST')) {
-            $rcCodes = $request->request->get('rc-codes'); // Get the value of 'rc-codes' from the form submission
+            $rcCodes = $request->request->get('rc-codes');
             $companies = $this->companyService->searchByRegistrationCode($rcCodes);
         } else {
             // Get the pageNo from the route parameters.
@@ -58,7 +58,7 @@ class CompanyController extends AbstractController {
 
             $companies = $this->companyService->getCompanyList($pageNo);
         }
-        
+
         return $this->render('company/index.html.twig', [
                     'companies' => !empty($companies['companies']) ? $companies['companies'] : $companies,
                     'pagination' => !empty($companies['pagination']) ? $companies['pagination'] : []
@@ -149,28 +149,38 @@ class CompanyController extends AbstractController {
     }
 
     #[Route('/edit/{registration_code}', name: 'app_company_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Company $company, EntityManagerInterface $entityManager): Response {
-        $form = $this->createForm(CompanyType::class, $company);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_company_index', [], Response::HTTP_SEE_OTHER);
+    public function edit(Request $request, Company $company): Response {
+        $rcCode = $request->attributes->get('registration_code');
+        
+        if ($request->isMethod('POST') && !empty($rcCode)) {
+            $formData = $request->request->all();
+            $formData['registration_code'] = $rcCode;
+            
+            $this->companyService->update($formData);
+            
+            return $this->redirectToRoute('app_company_index', ['pageNo' => 1]);
         }
+        else{
+
+            if (!empty($rcCode)) {
+                $company = $this->companyService->searchByRegistrationCode($rcCode);
+            } else {
+                return $this->redirectToRoute('app_company_index', ['pageNo' => 1]);
+            }
+        }
+        
+//        print_r($company); die();
 
         return $this->render('company/edit.html.twig', [
-                    'company' => $company,
-                    'form' => $form,
+                    'company' => !empty($company[0]) ? $company[0] : []
         ]);
     }
 
     #[Route('/delete/{registration_code}', name: 'app_company_delete', methods: ['POST'])]
-    public function delete(Request $request, Company $company, EntityManagerInterface $entityManager): Response {
+    public function delete(Request $request, Company $company): Response {
         if ($this->isCsrfTokenValid('delete' . $company->getId(), $request->request->get('_token'))) {
-            print_r($company); die();
-            $entityManager->remove($company);
-            $entityManager->flush();
+            $this->entityManager->remove($company);
+            $this->entityManager->flush();
         }
 
         return $this->redirectToRoute('app_company_index', [], Response::HTTP_SEE_OTHER);
