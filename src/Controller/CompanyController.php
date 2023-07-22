@@ -35,7 +35,7 @@ class CompanyController extends AbstractController {
         $this->tokenGenerator = $tokenGenerator;
     }
 
-    #[Route('/company/{pageNo<\d+>?}', name: 'app_company_index', methods: ['GET', 'POST'])]
+    #[Route('/company/list/{pageNo<\d+>?}', name: 'app_company_index', methods: ['GET', 'POST'])]
     public function index(Request $request): Response {
 
         // Search Request
