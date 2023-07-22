@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Company;
-use App\Form\CompanyType;
 use App\Utility\ScraperUtility;
 use App\Service\CompanyService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -42,8 +41,8 @@ class CompanyController extends AbstractController {
         if ($request->isMethod('POST')) {
             $submittedToken = $request->request->get('csrf_token');
             $csrfToken = $request->getSession()->get('company_item_csrf_token');
-            
-            if ($submittedToken == $csrfToken){
+
+            if ($submittedToken == $csrfToken) {
                 $token = $csrfToken; // For loading the page.
                 $rcCodes = $request->request->get('rc-codes');
                 $companies = $this->companyService->searchByRegistrationCode($rcCodes);
@@ -111,7 +110,7 @@ class CompanyController extends AbstractController {
                 ];
 
                 // Set the appropriate status code.
-                $statusCode = JsonResponse::HTTP_BAD_REQUEST; // 200
+                $statusCode = JsonResponse::HTTP_BAD_REQUEST;
                 return new JsonResponse($responseData, $statusCode);
             }
 
@@ -223,12 +222,36 @@ class CompanyController extends AbstractController {
     }
 
     #[Route('/delete/{registration_code}', name: 'app_company_delete', methods: ['POST'])]
-    public function delete(Request $request, Company $company): Response {
-        if ($this->isCsrfTokenValid('delete' . $company->getId(), $request->request->get('_token'))) {
-            $this->entityManager->remove($company);
-            $this->entityManager->flush();
-        }
+    public function delete(Request $request): JsonResponse {
+        $submittedToken = $request->request->get('csrf_token');
+        $csrfToken = $request->getSession()->get('company_item_csrf_token');
 
-        return $this->redirectToRoute('app_company_index', [], Response::HTTP_SEE_OTHER);
+        if ($submittedToken !== $csrfToken) {
+
+            $responseData = [
+                'message' => 'CSRF Token Mismatch : Multiversal Request Not Allowed!!! Contact Doromammu for Bargain.',
+            ];
+
+            $statusCode = JsonResponse::HTTP_UNAUTHORIZED; // 401
+        } else {
+
+            $rcCode = $request->attributes->get('registration_code');
+
+            if ($this->companyService->delete($rcCode)) {
+                $responseData = [
+                    'message' => 'Deleted (soft) successfully.'
+                ];
+                $statusCode = JsonResponse::HTTP_OK;
+            } else {
+                $responseData = [
+                    'message' => 'Operation failed.',
+                ];
+
+                // Set the appropriate status code.
+                $statusCode = JsonResponse::HTTP_BAD_REQUEST;
+            }
+
+            return new JsonResponse($responseData, $statusCode);
+        }
     }
 }
