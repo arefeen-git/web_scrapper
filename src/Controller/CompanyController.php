@@ -40,9 +40,19 @@ class CompanyController extends AbstractController {
 
         // Search Request
         if ($request->isMethod('POST')) {
-            $rcCodes = $request->request->get('rc-codes');
-            $companies = $this->companyService->searchByRegistrationCode($rcCodes);
+            $submittedToken = $request->request->get('csrf_token');
+            $csrfToken = $request->getSession()->get('company_item_csrf_token');
+            
+            if ($submittedToken == $csrfToken){
+                $token = $csrfToken; // For loading the page.
+                $rcCodes = $request->request->get('rc-codes');
+                $companies = $this->companyService->searchByRegistrationCode($rcCodes);
+            }
         } else {
+            // Genrate CSRF Token
+            $token = $this->tokenGenerator->generateToken();
+            $request->getSession()->set('company_item_csrf_token', $token);
+
             // Get the pageNo from the route parameters.
             $pageNo = (int) $request->attributes->get('pageNo', 1);
 
@@ -69,6 +79,7 @@ class CompanyController extends AbstractController {
         return $this->render('company/index.html.twig', [
                     'companies' => !empty($companies['companies']) ? $companies['companies'] : $companies,
                     'pagination' => !empty($companies['pagination']) ? $companies['pagination'] : [],
+                    'csrf_token' => $token,
                     'msg' => $msg
         ]);
     }

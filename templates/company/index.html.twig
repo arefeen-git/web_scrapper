@@ -21,6 +21,7 @@
         <div class="row pl-3">
             <div class="col-md-8">
                 <form id="searchForm" action="{{ path('app_company_index') }}" method="post">
+                    <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token }}" />
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-prepend">
