@@ -108,7 +108,7 @@ class CompanyService {
         return $companies;
     }
 
-    public function update(array $formData) {
+    public function update(array $formData): bool {
         $rc_code = $formData['registration_code'];
         $company = $this->companyRepository->findOneBy(['registration_code' => $rc_code]);
 
@@ -117,15 +117,21 @@ class CompanyService {
         }
 
         $company->setName($formData['name']);
-        
+
         $details = $company->getDetails();
         $details['vat'] = $formData['vat'];
         $details['address'] = $formData['address'];
         $company->setDetails($details);
-        
+
         $currentDateTime = new \DateTimeImmutable();
         $company->setUpdatedAt($currentDateTime);
+        
 
-        $this->entityManager->flush();
+        try {
+            $this->entityManager->flush();
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

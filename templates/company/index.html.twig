@@ -4,6 +4,16 @@
 
 {% block body %}
     <div class="container-fluid">
+        
+        {% if msg %}
+            <div class="alert alert-info alert-dismissible fade show p-2 m-2" role="alert">
+                {{ msg }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        {% endif %}
+        
         <div class="mx-auto m-2 p-2" style="width: 350px;">
             <h2 class="text-center">Company list</h2>
         </div>
