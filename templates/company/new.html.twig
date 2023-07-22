@@ -18,25 +18,26 @@
                 <div class="input-group">
                     <button class="btn btn-info" type="button" id="start_scraping">
                         <svg id="spinner" style="display: none;" xmlns="http://www.w3.org/2000/svg" height="0.875em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"/></svg>
-                        <span id="scrap_text" >Scrap me!</span>
+                        <span id="scrap_text" >Scrap & store</span>
                     </button>
                     <input id="rc-code" name="rc-code" type="text" class="form-control" placeholder="Registration Code" aria-label="Registration Code" aria-describedby="start_scraping" maxlength="9">
                 </div>
             </div>
             <div id="rc-code-error" class="text-danger ml-3"></div>
-            <!-- Spinner element -->
+
+            <div class="text-center">
+                <a class="btn btn-info" href="{{ path('app_company_index', {'pageNo': 1}) }}">Show List</a>
+            </div>
+
+            <div class="row">
+                <div style="display: none;" class="alert alert-success" role="alert"></div>
+                <div style="display: none;" class="alert alert-danger" role="alert"></div>
+                <div style="display: none;" class="alert alert-warning" role="alert"></div>
+            </div>
         </div>
-
-
-        <div style="display: none;" class="alert alert-success" role="alert"></div>
-
-        <div style="display: none;" class="alert alert-danger" role="alert"></div>
-
-        <div style="display: none;" class="alert alert-warning" role="alert"></div>
 
     </div>
 
-    {#    <a href="{{ path('app_company_index') }}">back to list</a>#}
 {% endblock %}
 
 {% block javascripts %}
