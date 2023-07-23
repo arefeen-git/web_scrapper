@@ -117,7 +117,7 @@ class CompanyController extends AbstractController {
             $scraperUtility = new ScraperUtility();
             $company_details = $scraperUtility->start_scraping($rc_code, $cookie_consent);
 
-            $store_new = $this->add_new($company_details);
+            $store_new = $this->companyService->add_new_company($company_details);
 
             $responseData = [
                 'message' => 'Scraping completed successfully',
@@ -128,31 +128,6 @@ class CompanyController extends AbstractController {
             $statusCode = JsonResponse::HTTP_OK; // 200
             return new JsonResponse($responseData, $statusCode);
         }
-    }
-
-    //Move this to service
-    public function add_new($company_details): int {
-        // Create a new Company entity and set its properties
-        $company = new Company();
-        $company->setRegistrationCode($company_details['registration_code']);
-        $company->setName($company_details['name']);
-
-        $details = [
-            "vat" => $company_details['vat'],
-            "address" => $company_details['address'],
-            "mobile" => $company_details['mobile']
-        ];
-
-        $company->setDetails($details);
-        $company->setFinances($company_details['finances']);
-        $company->setDeleted(0);
-
-        $this->entityManager->persist($company);
-        $this->entityManager->flush();
-
-        $company_id = $company->getId();
-
-        return $company_id;
     }
 
     #[Route('/new', name: 'app_company_new', methods: ['GET', 'POST'])]
