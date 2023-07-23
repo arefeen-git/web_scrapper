@@ -6,6 +6,9 @@
 parameters:
 
 services:
+    Predis\Client:
+        arguments:
+            - "tcp://127.0.0.1:6379" # Update with your Redis server address and port
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.

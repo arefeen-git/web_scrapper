@@ -9,60 +9,84 @@ namespace App\Service;
 
 use App\Constants;
 use App\Repository\CompanyRepository;
+use App\Service\RedisService;
 use Doctrine\ORM\EntityManagerInterface;
 
 class CompanyService {
 
     private CompanyRepository $companyRepository;
     private EntityManagerInterface $entityManager;
+    private RedisService $redisService;
 
-    public function __construct(CompanyRepository $companyRepository, EntityManagerInterface $entityManager) {
+    public function __construct(CompanyRepository $companyRepository, EntityManagerInterface $entityManager, RedisService $redisService) {
         $this->companyRepository = $companyRepository;
         $this->entityManager = $entityManager;
+        $this->redisService = $redisService;
     }
 
     public function getCompanyList(int $pageNo = 1): array {
+
         $responseLimiter = Constants::RESPONSE_LIMITER;
         $offset = ($pageNo <= 1) ? 0 : (($pageNo - 1) * $responseLimiter);
 
-        $queryBuilder = $this->entityManager->createQueryBuilder();
-        $queryBuilder
-                ->select('c.name', 'c.registration_code', 'c.details', 'c.finances')
-                ->from('App\Entity\Company', 'c')
-                ->where('c.deleted = :deleted')
-                ->setParameter('deleted', 0)
-                ->setFirstResult($offset)
-                ->setMaxResults($responseLimiter);
+        $redis_key = Constants::REDIS_KEY_PREFIX . $responseLimiter . "_" . $pageNo;
+        $redis_pagination_key = Constants::REDIS_PAGINATE_KEY_PREFIX . $responseLimiter . "_" . $pageNo;
 
-        $query = $queryBuilder->getQuery();
-        $companies = $query->getResult();
+        if ($this->redisService->checkIfKeyExists($redis_key) && $this->redisService->checkIfKeyExists($redis_pagination_key)) {
 
-        // Count total number of companies
-        $totalCount = $this->entityManager
-                ->createQueryBuilder()
-                ->select('COUNT(c.id)')
-                ->from('App\Entity\Company', 'c')
-                ->where('c.deleted = :deleted')
-                ->setParameter('deleted', 0)
-                ->getQuery()
-                ->getSingleScalarResult();
+            $redis_value = $this->redisService->getValueFromRedis($redis_key);
+            $redis_pagination_value = $this->redisService->getValueFromRedis($redis_pagination_key);
+            $companies = json_decode($redis_value);
+            $pagination = json_decode($redis_pagination_value);
+            
+        } else {
 
-        // Calculate previous, next, and after next page numbers
-        $previousPage = max(1, $pageNo - 1);
-        $nextPage = min(ceil($totalCount / $responseLimiter), $pageNo + 1);
-        $afterNextPage = min(ceil($totalCount / $responseLimiter), $nextPage + 1);
+            $queryBuilder = $this->entityManager->createQueryBuilder();
+            $queryBuilder
+                    ->select('c.name', 'c.registration_code', 'c.details', 'c.finances')
+                    ->from('App\Entity\Company', 'c')
+                    ->where('c.deleted = :deleted')
+                    ->setParameter('deleted', 0)
+                    ->orderBy('c.id', 'ASC')
+                    ->setFirstResult($offset)
+                    ->setMaxResults($responseLimiter);
+
+            $query = $queryBuilder->getQuery();
+            $companies = $query->getResult();
+
+            $redis_value = json_encode($companies);
+
+            $this->redisService->setValueInRedis($redis_key, $redis_value);
+
+            // *** Pagination Calculation Starts Here. ***
+            // Count total number of companies
+            $totalCount = $this->entityManager
+                    ->createQueryBuilder()
+                    ->select('COUNT(c.id)')
+                    ->from('App\Entity\Company', 'c')
+                    ->where('c.deleted = :deleted')
+                    ->setParameter('deleted', 0)
+                    ->getQuery()
+                    ->getSingleScalarResult();
+
+            // Calculate previous, next, and after next page numbers
+            $pagination = [];
+            $pagination['currentPage'] = $pageNo;
+            $pagination['previousPage'] = (int) max(1, $pageNo - 1);
+            $pagination['nextPage'] = (int) min(ceil($totalCount / $responseLimiter), $pageNo + 1);
+            $pagination['afterNextPage'] = (int) min(ceil($totalCount / $responseLimiter), $pagination['nextPage'] + 1);
+            $pagination['totalCount'] = (int) $totalCount;
+            $pagination['totalPages'] = (int) ceil($totalCount / $responseLimiter);
+
+            $redis_pagination_value = json_encode($pagination);
+
+            $this->redisService->setValueInRedis($redis_pagination_key, $redis_pagination_value);
+        }
 
         // Return the result along with pagination information
         return [
             'companies' => $companies,
-            'pagination' => [
-                'currentPage' => $pageNo,
-                'previousPage' => $previousPage,
-                'nextPage' => (int) $nextPage,
-                'afterNextPage' => (int) $afterNextPage,
-                'totalCount' => (int) $totalCount,
-                'totalPages' => (int) ceil($totalCount / $responseLimiter),
-            ],
+            'pagination' => $pagination
         ];
     }
 
@@ -125,16 +149,16 @@ class CompanyService {
 
         $currentDateTime = new \DateTimeImmutable();
         $company->setUpdatedAt($currentDateTime);
-        
 
         try {
             $this->entityManager->flush();
+            $this->redisService->deleteAll();
             return true;
         } catch (\Exception $e) {
             return false;
         }
     }
-    
+
     public function delete(int $registration_code): bool {
         $company = $this->companyRepository->findOneBy(['registration_code' => $registration_code, 'deleted' => 0]);
 
@@ -145,10 +169,10 @@ class CompanyService {
         $company->setDeleted(true);
         $currentDateTime = new \DateTimeImmutable();
         $company->setDeletedAt($currentDateTime);
-        
 
         try {
             $this->entityManager->flush();
+            $this->redisService->deleteAll();
             return true;
         } catch (\Exception $e) {
             return false;

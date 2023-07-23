@@ -50,4 +50,6 @@ class Constants {
     ];
     
     public const RESPONSE_LIMITER = 5;
+    public const REDIS_KEY_PREFIX = "redis_list_";
+    public const REDIS_PAGINATE_KEY_PREFIX = "redis_pagination_";
 }
