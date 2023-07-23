@@ -8,6 +8,7 @@
 namespace App\Service;
 
 use App\Constants;
+use App\Entity\Company;
 use App\Repository\CompanyRepository;
 use App\Service\RedisService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -130,6 +131,31 @@ class CompanyService {
         $companies = $query->getResult();
 
         return $companies;
+    }
+    
+    public function add_new_company($company_details): int {
+        // Create a new Company entity and set its properties
+        $company = new Company();
+        $company->setRegistrationCode($company_details['registration_code']);
+        $company->setName($company_details['name']);
+
+        $details = [
+            "vat" => $company_details['vat'],
+            "address" => $company_details['address'],
+            "mobile" => $company_details['mobile']
+        ];
+
+        $company->setDetails($details);
+        $company->setFinances($company_details['finances']);
+        $company->setDeleted(0);
+
+        $this->entityManager->persist($company);
+        $this->entityManager->flush();
+        $this->redisService->deleteAll();
+
+        $company_id = $company->getId();
+
+        return $company_id;
     }
 
     public function update(array $formData): bool {
