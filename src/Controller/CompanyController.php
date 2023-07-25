@@ -104,29 +104,36 @@ class CompanyController extends AbstractController {
             $companyRepository = $this->doctrine->getRepository(Company::class);
 
             // Check if the registration code already exists
-            if ($companyRepository->isRegistrationCodeExists($rc_code)) {
+            $filtered_rc_codes = $companyRepository->checkIfRegistrationCodeExists($rc_code);
+
+            // If empty, then all codes exist already
+            if (empty($filtered_rc_codes)) {
                 $responseData = [
-                    'message' => 'Company Already Exists',
+                    'message' => 'Provided Registration Code(s) Already Exists',
                 ];
 
                 // Set the appropriate status code.
                 $statusCode = JsonResponse::HTTP_BAD_REQUEST;
                 return new JsonResponse($responseData, $statusCode);
+            } else { 
+                $rc_codes = $filtered_rc_codes['new'];
+                $scraperUtility = new ScraperUtility();
+                $responseData['message'] = "";
+
+                foreach ($rc_codes as $rc_code) {
+                    $company_details = $scraperUtility->start_scraping($rc_code, $cookie_consent);
+                    if (!empty($company_details['error_message'])) {
+                        $responseData['message'] .= $rc_code . ' Invalid Registration Code. ';
+                    } else {
+                        $store_new = $this->companyService->add_new_company($company_details);
+                        $responseData['message'] .= $rc_code . ' Scrapped Successfully. ';
+                    }
+                }
+                
+                $statusCode = JsonResponse::HTTP_OK;
+
+                return new JsonResponse($responseData, $statusCode);
             }
-
-            $scraperUtility = new ScraperUtility();
-            $company_details = $scraperUtility->start_scraping($rc_code, $cookie_consent);
-
-            $store_new = $this->companyService->add_new_company($company_details);
-
-            $responseData = [
-                'message' => 'Scraping completed successfully',
-                'company_id' => $store_new
-            ];
-
-            // Set the appropriate status code
-            $statusCode = JsonResponse::HTTP_OK; // 200
-            return new JsonResponse($responseData, $statusCode);
         }
     }
 

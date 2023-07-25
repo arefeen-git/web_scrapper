@@ -200,10 +200,6 @@
     {{ parent() }}
 
     <script>
-        function showDeleteModal(registration_code) {
-            $('#delete-company').val(registration_code);
-            $('#deleteConfirmationModal').modal('show');
-        }
 
         $(function () {
 
@@ -212,29 +208,8 @@
                 event.preventDefault();
 
                 $("#rc-code-error").text("");
-
-                // Get the value of the "rc-codes" input field
-                let rcCodes = $('#rc-codes').val().trim();
-                let rcCodesRegex = /^\d{9}$/;
-                let error_msg = '';
-
-                if (rcCodes === '') {
-                    error_msg = "Search value is required (9 digit Registration code).";
-                } else {
-                    if (rcCodes.includes(',')) {
-                        let rc_code_array = rcCodes.split(",");
-                        rc_code_array.map((val) => {
-                            let tmp_val = val.trim();
-                            if (!rcCodesRegex.test(tmp_val)) {
-                                error_msg = 'One or more Registration Code is not valid.';
-                            }
-                        });
-                    } else {
-                        if (!rcCodesRegex.test(rcCodes)) {
-                            error_msg = 'Registration code must be of 9 digits.';
-                        }
-                    }
-                }
+                
+                let error_msg = registration_code_validation('#rc-codes');
 
                 if (error_msg !== '') {
                     $("#rc-code-error").text(error_msg);
