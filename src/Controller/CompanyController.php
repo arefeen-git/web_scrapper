@@ -2,8 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Company;
-use App\Utility\ScraperUtility;
 use App\Service\CompanyService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -46,6 +44,14 @@ class CompanyController extends AbstractController {
                 $token = $csrfToken; // For loading the page.
                 $rcCodes = $request->request->get('rc-codes');
                 $companies = $this->companyService->searchByRegistrationCode($rcCodes);
+            } else {
+
+                return $this->render('company/index.html.twig', [
+                            'companies' => [],
+                            'pagination' => [],
+                            'csrf_token' => $csrfToken, // Setting this, just in case the user don't check the url and falls into a loop.
+                            'msg' => 'CSRF Token Mismatch : Multiversal Request Not Allowed!!! Contact Doromammu for Bargain'
+                ]);
             }
         } else {
             // Genrate CSRF Token
@@ -66,7 +72,10 @@ class CompanyController extends AbstractController {
                 return $this->redirectToRoute('app_company_new');
             }
 
-            $companies = $this->companyService->getCompanyList($pageNo);
+            $company_list_details = $this->companyService->getCompanyList($pageNo);
+            
+            $companies = $company_list_details['companies'];
+            $pagination = !empty($companies) ? $company_list_details['pagination'] : [];
         }
 
         $msg = !empty($request->getSession()->get('msg')) ? $request->getSession()->get('msg') : null;
@@ -76,8 +85,8 @@ class CompanyController extends AbstractController {
         }
 
         return $this->render('company/index.html.twig', [
-                    'companies' => !empty($companies['companies']) ? $companies['companies'] : $companies,
-                    'pagination' => !empty($companies['pagination']) ? $companies['pagination'] : [],
+                    'companies' => $companies,
+                    'pagination' => $pagination,
                     'csrf_token' => $token,
                     'msg' => $msg
         ]);
@@ -98,42 +107,11 @@ class CompanyController extends AbstractController {
             return new JsonResponse($responseData, $statusCode);
         } else {
             $cookie_consent = $request->request->get('cookie-consent');
-            $rc_code = $request->request->get('rc-code');
+            $registration_code = $request->request->get('rc-code');
 
-            // Get the CompanyRepository from the container.
-            $companyRepository = $this->doctrine->getRepository(Company::class);
+            $responseData = $this->companyService->scraper_service($registration_code, $cookie_consent);
 
-            // Check if the registration code already exists
-            $filtered_rc_codes = $companyRepository->checkIfRegistrationCodeExists($rc_code);
-
-            // If empty, then all codes exist already
-            if (empty($filtered_rc_codes)) {
-                $responseData = [
-                    'message' => 'Provided Registration Code(s) Already Exists',
-                ];
-
-                // Set the appropriate status code.
-                $statusCode = JsonResponse::HTTP_BAD_REQUEST;
-                return new JsonResponse($responseData, $statusCode);
-            } else { 
-                $rc_codes = $filtered_rc_codes['new'];
-                $scraperUtility = new ScraperUtility();
-                $responseData['message'] = "";
-
-                foreach ($rc_codes as $rc_code) {
-                    $company_details = $scraperUtility->start_scraping($rc_code, $cookie_consent);
-                    if (!empty($company_details['error_message'])) {
-                        $responseData['message'] .= $rc_code . ' Invalid Registration Code. ';
-                    } else {
-                        $store_new = $this->companyService->add_new_company($company_details);
-                        $responseData['message'] .= $rc_code . ' Scrapped Successfully. ';
-                    }
-                }
-                
-                $statusCode = JsonResponse::HTTP_OK;
-
-                return new JsonResponse($responseData, $statusCode);
-            }
+            return new JsonResponse($responseData['message'], $responseData['statusCode']);
         }
     }
 
