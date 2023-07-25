@@ -9,9 +9,11 @@ namespace App\Service;
 
 use App\Constants;
 use App\Entity\Company;
+use App\Utility\ScraperUtility;
 use App\Repository\CompanyRepository;
 use App\Service\RedisService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class CompanyService {
 
@@ -39,7 +41,6 @@ class CompanyService {
             $redis_pagination_value = $this->redisService->getValueFromRedis($redis_pagination_key);
             $companies = json_decode($redis_value);
             $pagination = json_decode($redis_pagination_value);
-            
         } else {
 
             $queryBuilder = $this->entityManager->createQueryBuilder();
@@ -132,7 +133,43 @@ class CompanyService {
 
         return $companies;
     }
-    
+
+    public function scraper_service($registration_code, $cookie_consent) {
+        
+        $filtered_rc_codes = $this->companyRepository->checkIfRegistrationCodeExists($registration_code);
+
+        // If empty, then all codes (companies) exist already
+        if (empty($filtered_rc_codes)) {
+            $responseData = [
+                'message' => 'Provided Registration Code(s) Already Exists',
+            ];
+            
+            $responseData['statusCode'] = JsonResponse::HTTP_BAD_REQUEST;
+
+            return $responseData;
+        } else {
+            $rc_codes = $filtered_rc_codes['new'];
+            $scraperUtility = new ScraperUtility();
+            $responseData['message'] = "";
+
+            foreach ($rc_codes as $rc_code) {
+                // Scrapping starting in 3, 2, 1 ...
+                $company_details = $scraperUtility->start_scraping($rc_code, $cookie_consent);
+                
+                if (!empty($company_details['error_message'])) {
+                    $responseData['message'] .= $rc_code . ' Invalid Registration Code. ';
+                } else {
+                    $store_new = $this->add_new_company($company_details);
+                    $responseData['message'] .= $rc_code . ' Scrapped Successfully. ';
+                }
+            }
+            
+            $responseData['statusCode'] = JsonResponse::HTTP_OK;
+
+            return $responseData;
+        }
+    }
+
     public function add_new_company($company_details): int {
         // Create a new Company entity and set its properties
         $company = new Company();
