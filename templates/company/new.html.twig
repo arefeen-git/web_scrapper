@@ -20,7 +20,7 @@
                         <svg id="spinner" style="display: none;" xmlns="http://www.w3.org/2000/svg" height="0.875em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"/></svg>
                         <span id="scrap_text" >Scrap & store</span>
                     </button>
-                    <input id="rc-code" name="rc-code" type="text" class="form-control" placeholder="Registration Code" aria-label="Registration Code" aria-describedby="start_scraping" maxlength="9">
+                    <input id="rc-code" name="rc-code" type="text" class="form-control" placeholder="Registration Code : 304565690, 306019423, 300515252" aria-label="Registration Code" aria-describedby="start_scraping">
                 </div>
             </div>
             <div id="rc-code-error" class="text-danger ml-3"></div>
@@ -30,7 +30,7 @@
             </div>
 
             <div class="row">
-                <div style="display: none;" class="alert alert-success" role="alert"></div>
+                <div style="display: none;" class="alert alert-info" role="alert"></div>
                 <div style="display: none;" class="alert alert-danger" role="alert"></div>
                 <div style="display: none;" class="alert alert-warning" role="alert"></div>
             </div>
@@ -57,11 +57,6 @@
             }
 
             $("#start_scraping").click(function () {
-                // Disable the button and show Spinner.
-                $("#start_scraping").prop("disabled", true);
-                // Show the spinner
-                $("#spinner").show();
-                $("#scrap_text").hide();
 
                 // Clear error messages to start anew.
                 $("#cookie-error").text("");
@@ -76,61 +71,65 @@
                     $("#cookie-error").text("Cookie Consent is required.");
                 }
 
-                var rcCodeRegex = /^\d{9}$/; // Regex from HeapOverflow!!
+                let error_msg = registration_code_validation('#rc-code');
 
-                if (rcCode === "") {
-                    $("#rc-code-error").text("Registration Code is required.");
-                } else if (!rcCode.match(rcCodeRegex)) {
-                    $("#rc-code-error").text("Registration Code must be a 9-digit number.");
-                }
-
-                // Now AJAX ...
-                if (cookieConsent !== "" && rcCode !== "" && rcCode.match(rcCodeRegex)) {
-                    var formData = {
-                        'cookie-consent': cookieConsent,
-                        'rc-code': rcCode,
-                        'csrf_token': csrfToken
-                    };
-                    $.ajax({
-                        type: 'POST',
-                        url: '/company/scrap',
-                        data: formData,
-                        success: function (response, status, xhr) {
-                            // Set cookie to keep the input fields and then read from them.
-                            setCookie('rc-code', rcCode, 1);
-
-                            // Cookie consent breaks max char limit. Setting it in parts.
-                            saveToLocalStorage('cookieConsent', cookieConsent);
-
-                            // Show the success alert
-                            $('.alert-warning, .alert-danger').hide();
-                            $('.alert-success').text('Scraped and Stored. Check table for more info.').fadeIn().delay(5000).fadeOut();
-                        },
-                        error: function (xhr, status, error) {
-                            removeCookie('rc-code');
-                            removeFromLocalStorage('cookieConsent');
-
-                            if (xhr.status === 400) {
-                                // Show the warning alert for status code 400
-                                $('.alert-success, .alert-danger').hide();
-                                $('.alert-warning').text('Company already exists').fadeIn().delay(5000).fadeOut();
-                            } else {
-                                // Show the error alert for any other status code
-                                $('.alert-success, .alert-warning').hide();
-                                $('.alert-danger').text('Bad Request - Something went wrong. Should check/reset the Cookie-consent.').fadeIn().delay(5000).fadeOut();
-                            }
-                        },
-                        complete: function () {
-                            // Re-enable button and hide spinner.
-                            $("#start_scraping").prop("disabled", false);
-                            $("#spinner").hide();
-                            $("#scrap_text").show();
-                        }
-                    });
+                if (error_msg !== '') {
+                    $("#rc-code-error").text(error_msg);
                 } else {
-                    $("#start_scraping").prop("disabled", false);
-                    $("#spinner").hide();
-                    $("#scrap_text").show();
+                    // Disable the button and show Spinner.
+                    $("#start_scraping").prop("disabled", true);
+                    // Show the spinner
+                    $("#spinner").show();
+                    $("#scrap_text").hide();
+                    
+                    // Now AJAX ...
+                    if (cookieConsent !== "") {
+                        let formData = {
+                            'cookie-consent': cookieConsent,
+                            'rc-code': rcCode,
+                            'csrf_token': csrfToken
+                        };
+                        $.ajax({
+                            type: 'POST',
+                            url: '/company/scrap',
+                            data: formData,
+                            success: function (response) {
+                                // Set cookie to keep the input fields and then read from them.
+                                setCookie('rc-code', rcCode, 1);
+
+                                // Cookie consent breaks max char limit. Setting it in localStorage.
+                                saveToLocalStorage('cookieConsent', cookieConsent);
+
+                                // Show the success alert
+                                $('.alert-warning, .alert-danger').hide();
+                                $('.alert-info').text(response.message).fadeIn().delay(5000).fadeOut();
+                            },
+                            error: function (response, xhr) {
+                                removeCookie('rc-code');
+                                removeFromLocalStorage('cookieConsent');
+
+                                if (xhr.status === 400) {
+                                    // Show the warning alert for status code 400
+                                    $('.alert-info, .alert-danger').hide();
+                                    $('.alert-warning').text(response.responseJSON.message).fadeIn().delay(5000).fadeOut();
+                                } else {
+                                    // Show the error alert for any other status code
+                                    $('.alert-info, .alert-warning').hide();
+                                    $('.alert-danger').text(response.responseJSON.message).fadeIn().delay(5000).fadeOut();
+                                }
+                            },
+                            complete: function () {
+                                // Re-enable button and hide spinner.
+                                $("#start_scraping").prop("disabled", false);
+                                $("#spinner").hide();
+                                $("#scrap_text").show();
+                            }
+                        });
+                    } else {
+                        $("#start_scraping").prop("disabled", false);
+                        $("#spinner").hide();
+                        $("#scrap_text").show();
+                    }
                 }
             });
         });

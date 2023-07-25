@@ -14,22 +14,42 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Company[]    findAll()
  * @method Company[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
+class CompanyRepository extends ServiceEntityRepository {
 
-class CompanyRepository extends ServiceEntityRepository
-{
-    public function __construct(ManagerRegistry $registry)
-    {
+    public function __construct(ManagerRegistry $registry) {
         parent::__construct($registry, Company::class);
     }
 
-    public function isRegistrationCodeExists(int $registrationCode): bool
-    {
-        $companies = $this->findBy(['registration_code' => $registrationCode]);
-        
-        if (!empty($companies)){
-            return true;
+    public function checkIfRegistrationCodeExists($registrationCode): array {
+        $rc_code_array = !empty($registrationCode) ? explode(",", $registrationCode) : [];
+
+        foreach ($rc_code_array as &$val) {
+            $val = (int) trim($val);
         }
 
-        return false;
+        asort($rc_code_array);
+        $tmp_rc_array = array_values($rc_code_array);
+
+        // Look if at least one registration code is new.
+
+        $companies = $this->findBy(['deleted' => 0, 'registration_code' => $rc_code_array]);
+
+        $existing_registration_codes = array_map(function ($company) {
+            return $company->getRegistrationCode();
+        }, $companies);
+
+        asort($existing_registration_codes);
+        $tmp_existing_array = array_values($existing_registration_codes);
+        
+        $result = [];
+
+        if ($tmp_rc_array === $tmp_existing_array) {
+            return $result;
+        } else {
+            $result['new'] = array_diff($tmp_rc_array, $tmp_existing_array);
+            $result['old'] = $tmp_existing_array;
+            
+            return $result;
+        }
     }
 }
