@@ -6,6 +6,9 @@
 parameters:
 
 services:
+    App\MessageHandler\ScrapMessageHandler:
+        tags: ['messenger.message_handler']
+        
     Predis\Client:
         arguments:
             - "tcp://127.0.0.1:6379" # Update with your Redis server address and port
