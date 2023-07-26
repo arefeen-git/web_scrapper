@@ -9,20 +9,28 @@ namespace App\Service;
 
 use App\Constants;
 use App\Entity\Company;
-use App\Utility\ScraperUtility;
 use App\Repository\CompanyRepository;
 use App\Service\RedisService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Message\ScrapMessage;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class CompanyService {
 
     private CompanyRepository $companyRepository;
+    private MessageBusInterface $messageBusInterface;
     private EntityManagerInterface $entityManager;
     private RedisService $redisService;
 
-    public function __construct(CompanyRepository $companyRepository, EntityManagerInterface $entityManager, RedisService $redisService) {
+    public function __construct(
+            CompanyRepository $companyRepository,
+            MessageBusInterface $messageBusInterface,
+            EntityManagerInterface $entityManager,
+            RedisService $redisService
+    ) {
         $this->companyRepository = $companyRepository;
+        $this->messageBusInterface = $messageBusInterface;
         $this->entityManager = $entityManager;
         $this->redisService = $redisService;
     }
@@ -149,21 +157,14 @@ class CompanyService {
             return $responseData;
         } else {
             $rc_codes = $filtered_rc_codes['new'];
-            $scraperUtility = new ScraperUtility();
-            $responseData['message'] = "";
 
             foreach ($rc_codes as $rc_code) {
                 // Scrapping starting in 3, 2, 1 ...
-                $company_details = $scraperUtility->start_scraping($rc_code, $cookie_consent);
-                
-                if (!empty($company_details['error_message'])) {
-                    $responseData['message'] .= $rc_code . ' Invalid Registration Code. ';
-                } else {
-                    $store_new = $this->add_new_company($company_details);
-                    $responseData['message'] .= $rc_code . ' Scrapped Successfully. ';
-                }
+                $message = new ScrapMessage($rc_code, $cookie_consent);
+                $this->messageBusInterface->dispatch($message);
             }
             
+            $responseData['message'] = ' Scraping Started for ' . implode(', ', $rc_codes);
             $responseData['statusCode'] = JsonResponse::HTTP_OK;
 
             return $responseData;

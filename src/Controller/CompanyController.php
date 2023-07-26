@@ -44,6 +44,7 @@ class CompanyController extends AbstractController {
                 $token = $csrfToken; // For loading the page.
                 $rcCodes = $request->request->get('rc-codes');
                 $companies = $this->companyService->searchByRegistrationCode($rcCodes);
+                $pagination = [];
             } else {
 
                 return $this->render('company/index.html.twig', [
@@ -111,7 +112,7 @@ class CompanyController extends AbstractController {
 
             $responseData = $this->companyService->scraper_service($registration_code, $cookie_consent);
 
-            return new JsonResponse($responseData['message'], $responseData['statusCode']);
+            return new JsonResponse($responseData, $responseData['statusCode']);
         }
     }
 
