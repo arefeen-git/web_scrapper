@@ -41,13 +41,13 @@
 
         docker exec -it php-container bash
 
-8. Inside the php-container of docker, run the migration script -
-
-        php bin/console doctrine:migrations:migrate
-
-9.  Now you need to install all composer dependencies. So run -
+8. Inside the php-container of docker, install all composer dependencies. So run -
 
         composer install
+
+9. Now you need to run the migration script -
+
+        php bin/console doctrine:migrations:migrate
 
 10. Now run below command to start the project -
 
