@@ -1,21 +1,77 @@
 version: '3'
 
-services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-15}-alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-    volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+networks:
+    scrapper_network:
 
-volumes:
-###> doctrine/doctrine-bundle ###
-  database_data:
-###< doctrine/doctrine-bundle ###
+services:
+
+    # nginx
+    nginx-service:
+        image: nginx:stable-alpine
+        container_name: nginx-container
+        ports:
+            - "8080:80"
+        volumes:
+            - ./:/var/www/html/holy_scrap
+            - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+        depends_on:
+            - php-service
+            - mysql-service
+        networks:
+            - scrapper_network
+
+    # php
+    php-service:
+        build:
+            context: .
+            dockerfile: ./Dockerfile
+        container_name: php-container
+        ports:
+            - "9000:9000"
+        volumes:
+            - ./:/var/www/html/holy_scrap
+        environment:
+            REDIS_HOST: ${REDIS_HOST}
+            REDIS_PORT: ${REDIS_PORT}
+        depends_on:
+            - rabbitmq-service
+        networks:
+            - scrapper_network
+
+    # mysql
+    mysql-service:
+        image: mysql:latest
+        container_name: mysql-container
+        ports:
+            - "3306:3306"
+        volumes:
+            - /var/www/html/docker-mysql-data:/var/lib/mysql
+        command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        restart: always
+        environment:
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        networks:
+            - scrapper_network
+    
+    # redis
+    redis-service:
+      image: redis:latest
+      container_name: redis-container
+      ports:
+          - "6379:6379"
+      restart: always
+      networks:
+        - scrapper_network
+        
+    # rabbitMQ
+    rabbitmq-service:
+        image: rabbitmq:latest
+        container_name: rabbitmq-container
+        ports:
+            - "5672:5672"
+            - "15672:15672" # For the RabbitMQ management UI
+        restart: always
+        networks:
+            - scrapper_network

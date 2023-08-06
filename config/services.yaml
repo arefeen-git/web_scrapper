@@ -6,12 +6,14 @@
 parameters:
 
 services:
+    
     App\MessageHandler\ScrapMessageHandler:
         tags: ['messenger.message_handler']
         
     Predis\Client:
         arguments:
-            - "tcp://127.0.0.1:6379" # Update with your Redis server address and port
+            - "tcp://redis-container:6379" # Update with your Redis server address and port
+    
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
@@ -26,7 +28,7 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
     
-    # Add the new Service directory as a resource
+    # Adding the new Service directory as a resource (For company and redis service)
     App\Service\:
         resource: '../src/Service/'
         public: true # For directory to be publicly accessible
