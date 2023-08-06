@@ -45,7 +45,11 @@
 
         composer install
 
-9. Now you need to run the migration script -
+9. Now you need to Create the Database
+
+        php bin/console doctrine:database:create
+
+   and then run the migration script -
 
         php bin/console doctrine:migrations:migrate
 
