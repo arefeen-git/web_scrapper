@@ -17,7 +17,7 @@ class ScraperUtility extends AbstractController {
      * @param int $rcCode 9 digit registration code of the company.
      * @param string $cookieConsent Cookie Consent Value Constants::SCRAP_FROM website after passing capcha.
      *
-     * @return array Should return company object.
+     * @return array Should return company details which can be used to create a company.
      */
     public function start_scraping($rcCode, $cookieConsent): array {
 
