@@ -22,9 +22,9 @@
 
 4. Please replace **my_project_directory** with the directory name you cloned this project to in below files -
 
-   docker-compose.yml - line 15, 32.
+   <code>docker-compose.yml - line 15 & 32
    Dockerfile - line 13
-   default.conf - line 6
+   default.conf - line 6</code>
 
    For example, if the line is somwthing like this - **/var/www/html/my_project_directory/public** change that to this - 
    **/var/www/html/web_scrapper/public** where web_scrapper is the current working directory.
