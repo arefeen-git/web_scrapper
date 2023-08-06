@@ -10,14 +10,14 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure zip \
     && docker-php-ext-install zip
 
-WORKDIR /var/www/html/holy_scrap
+WORKDIR /var/www/html/my_project_directory
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 RUN curl -sS https://get.symfony.com/cli/installer | bash
 RUN mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
 
-RUN composer require symfony/orm-pack
-RUN composer require --dev symfony/maker-bundle
-RUN composer require symfony/messenger
-RUN composer require symfony/amqp-messenger
+#RUN composer require symfony/orm-pack
+#RUN composer require --dev symfony/maker-bundle
+#RUN composer require symfony/messenger
+#RUN composer require symfony/amqp-messenger
