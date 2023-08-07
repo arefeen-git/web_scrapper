@@ -29,13 +29,13 @@ class ScrapMessageHandler implements MessageHandlerInterface
         $cookieConsent = $message->getCookieConsent();
 
         $company_details = $this->scraperUtility->start_scraping($registrationCode, $cookieConsent);
-        $store_new = $this->companyService->add_new_company($company_details);
+        $store_new = !empty($company_details) ? $this->companyService->add_new_company($company_details) : false;
         
         if (!empty($store_new)){
             echo "Reg Code : " . $registrationCode . " Stored in ID : " . $store_new . " . ";
         }
         else{
-            echo "Reg Code : " . $registrationCode . " already exists. ";
+            echo "Reg Code : " . $registrationCode . " already exists / Provided Cookie Consent not working. Search company list to check if company already exists. ";
         }
     }
 }

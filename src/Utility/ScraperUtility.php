@@ -24,18 +24,20 @@ class ScraperUtility extends AbstractController {
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
         $cookie_consent = $cookieConsent;
-        $user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36';
+
+        // This will try to get the appropriate form data boundary, user-agent etc. for the requests.
+        $browser_elements = $this->_get_browser_elemetns($cookie_consent);
 
         // Set request headers
         $header_elements = [
-            'content-type: multipart/form-data; boundary=----WebKitFormBoundary7DhR5jphY5R9QUgD',
+            $browser_elements['content-type'],
             'cookie: ' . $cookie_consent,
-            'user-agent: ' . $user_agent
+            $browser_elements['user-agent']
         ];
 
         // Set request data
         $registration_code = $rcCode;
-        $data = "------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"word\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"code\"\r\n\r\nPUT_REGISTRATION_CODE_HERE\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"codepvm\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"city\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"search_terms\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"street\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"employeesMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"employeesMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"salaryMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"salaryMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"debtMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"debtMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"transportMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"transportMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"salesRevenueMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"salesRevenueMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"netProfitMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"netProfitMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"registeredFrom\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"registeredTo\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"search_terms\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"order\"\r\n\r\n1\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"resetFilter\"\r\n\r\n0\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD--\r\n";
+        $data = $browser_elements['form-data'];
         $form_data = str_replace("PUT_REGISTRATION_CODE_HERE", $registration_code, $data);
 
         // Options from stream_context
@@ -74,7 +76,7 @@ class ScraperUtility extends AbstractController {
 
         $company_profile_header = [
             'cookie: ' . $cookie_consent,
-            'user-agent: ' . $user_agent
+            $browser_elements['user-agent']
         ];
 
         $company_profile_context = stream_context_create([
@@ -107,10 +109,10 @@ class ScraperUtility extends AbstractController {
         $company_details = [];
 
         foreach (Constants::IDENTIFY_COMPANY_DETAILS as $info => $props) {
-            
+
             // Set default value.
             $company_details[strtolower($info)] = Constants::MESSAGE_NA;
-            
+
             foreach ($company_profile_html_array as $key => $val) {
                 if (strpos($val, $props['IDENTIFYING_KEY']) !== false) {
                     $info_index = $key + $props['NODE_TO_TRAVEL'];
@@ -118,13 +120,13 @@ class ScraperUtility extends AbstractController {
                     break;
                 }
             }
-            
+
             /*
              * Arefeen : Required info should be in this element. 
              * Some info might be missing, so use single condition block for each individual info.
              * Don't use only else as some companies doesn't show vat, and use different formats regarding mobile.
              */
-            
+
             $dom->loadHTML($company_profile_html_array[$info_index]);
 
             if ($info == Constants::NAME && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
@@ -134,11 +136,11 @@ class ScraperUtility extends AbstractController {
                     $company_details[strtolower($info)] = str_replace("Company", "", ucwords(strtolower($info_obj->textContent)));
                 }
             }
-            
+
             if ($info == Constants::ADDRESS && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
                 $company_details[strtolower($info)] = $company_profile_html_array[$info_index];
             }
-            
+
             if ($info == Constants::MOBILE && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
                 // Find the img element that contains mobile no image.
                 $info_element = $dom->getElementsByTagName('img')->item(0);
@@ -147,7 +149,7 @@ class ScraperUtility extends AbstractController {
                     $company_details[strtolower($info)] = Constants::SCRAP_FROM . $info_obj;
                 }
             }
-            
+
             if ($info == Constants::RC && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
                 $info_element = $dom->getElementsByTagName($props['IDENTIFYING_NODE']);
                 if (!empty($info_element)) {
@@ -245,5 +247,32 @@ class ScraperUtility extends AbstractController {
         $result = trim($mod_html . '</table>');
 
         return trim($result);
+    }
+
+    // Limiting support for 4 browsers
+    private function _get_browser_elemetns($cookie_consent): array {
+        $url_decoded = urldecode($cookie_consent);
+        $url_decoded_array = explode(";", $url_decoded);
+
+        if (!is_array($url_decoded_array) || empty($url_decoded_array[0])) {
+            return [];
+        }
+
+        $browser_elements = [];
+
+        $firstElement = $url_decoded_array[0];
+        $secondElement = $url_decoded_array[2] ?? null;
+
+        if (str_contains($firstElement, Constants::LINUX_CHROME['identifier'])) {
+            $browser_elements = Constants::LINUX_CHROME;
+        } elseif (str_contains($firstElement, Constants::LINUX_MOZILLA['identifier'])) {
+            $browser_elements = Constants::LINUX_MOZILLA;
+        } elseif (str_contains($firstElement, Constants::MAC_WINDOWS_COMMONER)) {
+            if (!empty($secondElement)) {
+                $browser_elements = str_contains($secondElement, Constants::MAC_CHROME['identifier']) ? Constants::MAC_CHROME : Constants::WINDOWS_CHROME;
+            }
+        }
+
+        return $browser_elements;
     }
 }

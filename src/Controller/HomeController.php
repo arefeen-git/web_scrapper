@@ -24,19 +24,42 @@ class HomeController extends AbstractController {
 
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
-        $cookie_consent = 'CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%223e8df365-6f2c-4c1a-80ad-d5c902d78b97%22%7D; _gid=GA1.2.857438531.1689414271; PHPSESSID=5b6573fol6l6qjhoc0tqo34e0i; cf_clearance=pQ7dqFbDHvJZtn8ArG.onzOz0hCbpDvisFudQ0G.Fqg-1689864040-0-250.2.1689864040; _gat_UA-724652-3=1; _ga=GA1.1.1096950485.1688928483; _ga_D931ERQW91=GS1.1.1689864030.49.1.1689864043.0.0.0';
-        $user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36';
+        $cookie_consent = 'VzLtLoginHash=Ir5m8qAvlyaGfg0dbH; _gid=GA1.2.1022143044.1691396522; cf_clearance=wDvZaWd_cr3SgQZqK6FRlvnzTreGOSQWV2INUsu2sAw-1691439000-0-1-37c3310c.776000b8.60c26eec-250.2.1691439000; CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%2298b5c6bf-eebe-454f-a7fa-dcf9580b6b64%22%7D; PHPSESSID=53auht7ictbpnq96ar114beln2; _gat_UA-724652-3=1; _ga_D931ERQW91=GS1.1.1691439000.3.1.1691439703.0.0.0; _ga=GA1.1.303498819.1691396522';
+        
+        $url_decoded = urldecode($cookie_consent);
+        $url_decoded_array = explode(";", $url_decoded);
+        
+        $browser_elemnts = [];
+        
+        if (is_array($url_decoded_array) && !empty($url_decoded_array[0])){
+            if (str_contains($url_decoded_array[0], Constants::LINUX_CHROME['identifier'])){
+                $browser_elemnts = Constants::LINUX_CHROME;
+            }
+            else if(str_contains($url_decoded_array[0], Constants::LINUX_MOZILLA['identifier'])){
+                $browser_elemnts = Constants::LINUX_MOZILLA;
+            }
+            else if(str_contains($url_decoded_array[0], Constants::MAC_WINDOWS_COMMONER)){
+                if (!empty($url_decoded_array[2])){
+                    if (str_contains($url_decoded_array[2], Constants::MAC_CHROME['identifier'])){
+                        $browser_elemnts = Constants::MAC_CHROME;
+                    }
+                    else if(str_contains($url_decoded_array[2], Constants::WINDOWS_CHROME['identifier'])){
+                        $browser_elemnts = Constants::WINDOWS_CHROME;
+                    }
+                }
+            }
+        }
 
         // Set request headers
         $header_elements = [
-            'content-type: multipart/form-data; boundary=----WebKitFormBoundary7DhR5jphY5R9QUgD',
+            $browser_elemnts['content-type'],
             'cookie: ' . $cookie_consent,
-            'user-agent: ' . $user_agent
+            $browser_elemnts['user-agent']
         ];
 
         // Set request data
-        $registration_code = 306019423;
-        $data = "------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"word\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"code\"\r\n\r\nPUT_REGISTRATION_CODE_HERE\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"codepvm\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"city\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"search_terms\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"street\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"employeesMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"employeesMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"salaryMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"salaryMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"debtMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"debtMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"transportMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"transportMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"salesRevenueMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"salesRevenueMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"netProfitMin\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"netProfitMax\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"registeredFrom\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"registeredTo\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"search_terms\"\r\n\r\n\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"order\"\r\n\r\n1\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD\r\nContent-Disposition: form-data; name=\"resetFilter\"\r\n\r\n0\r\n------WebKitFormBoundary7DhR5jphY5R9QUgD--\r\n";
+        $registration_code = 306373468;
+        $data = $browser_elemnts['form-data'];
         $form_data = str_replace("PUT_REGISTRATION_CODE_HERE", $registration_code, $data);
 
         // Options from stream_context
@@ -74,7 +97,7 @@ class HomeController extends AbstractController {
 
         $company_profile_header = [
             'cookie: ' . $cookie_consent,
-            'user-agent: ' . $user_agent
+            $browser_elemnts['user-agent']
         ];
 
         $company_profile_context = stream_context_create([
