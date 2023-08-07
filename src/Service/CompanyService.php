@@ -237,7 +237,24 @@ class CompanyService {
         if (empty($company)) {
             return false;
         }
-
+        
+        // Setting temporary registration code, otherwise if someone want to store deleted registration code
+        // an error would be given as the schema declares registration_code as a unique field.
+        
+        $dateTime = new \DateTime();
+        $day = $dateTime->format('d');
+        $hour = $dateTime->format('H');
+        $minute = $dateTime->format('i');
+        $second = $dateTime->format('s');
+        
+        $tmp_rc = rand(1,9) . $day . $hour . $minute . $second;
+        $company->setRegistrationCode($tmp_rc);
+        
+        // Storing original rc for future reference
+        $details = $company->getDetails();
+        $details['original_registration_code'] = $registration_code;
+        $company->setDetails($details);
+        
         $company->setDeleted(true);
         $currentDateTime = new \DateTimeImmutable();
         $company->setDeletedAt($currentDateTime);
