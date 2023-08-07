@@ -31,7 +31,12 @@ class ScrapMessageHandler implements MessageHandlerInterface
         $company_details = $this->scraperUtility->start_scraping($registrationCode, $cookieConsent);
         $store_new = $this->companyService->add_new_company($company_details);
         
-        echo "Reg Code : " . $registrationCode . " Stored in ID : " . $store_new;
+        if (!empty($store_new)){
+            echo "Reg Code : " . $registrationCode . " Stored in ID : " . $store_new . " . ";
+        }
+        else{
+            echo "Reg Code : " . $registrationCode . " already exists. ";
+        }
     }
 }
 

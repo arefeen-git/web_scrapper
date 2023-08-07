@@ -28,7 +28,7 @@ class CompanyRepository extends ServiceEntityRepository {
         }
 
         asort($rc_code_array);
-        $tmp_rc_array = array_values($rc_code_array);
+        $tmp_rc_array = array_unique(array_values($rc_code_array)); // Making 'em unique
 
         // Look if at least one registration code is new.
 

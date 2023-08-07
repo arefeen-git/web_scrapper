@@ -172,6 +172,14 @@ class CompanyService {
     }
 
     public function add_new_company($company_details): int {
+        
+        // Extra validation just to catch duplicate reg codes which may pass in the interval of multiple consumers/workers.
+        $checker = $this->companyRepository->checkIfRegistrationCodeExists($company_details['registration_code']);
+        
+        if (empty($checker)){
+            return false;
+        }
+        
         // Create a new Company entity and set its properties
         $company = new Company();
         $company->setRegistrationCode($company_details['registration_code']);
