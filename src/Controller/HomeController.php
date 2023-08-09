@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use DOMDocument, DOMXPath;
 use App\Constants;
+<<<<<<< HEAD
 use App\Utility\ScraperUtility;
 
 class HomeController extends AbstractController {
@@ -18,6 +19,11 @@ class HomeController extends AbstractController {
         $this->scraperUtility = $scraperUtility;
     }
     
+=======
+
+class HomeController extends AbstractController {
+    
+>>>>>>> develop
     #[Route('/home/test', name: 'app_home_test')]
     public function test(): Response {
         $number = "5";
@@ -32,6 +38,7 @@ class HomeController extends AbstractController {
 
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
+<<<<<<< HEAD
         $cookie_consent = 
                 <<<EOT
                     curl 'https://rekvizitai.vz.lt/en/company-search/1/' --compressed -X POST -H 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/116.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.5' -H 'Accept-Encoding: gzip, deflate, br' -H 'Referer: https://rekvizitai.vz.lt/en/company-search/' -H 'Content-Type: multipart/form-data; boundary=---------------------------6170295819296568743677679354' -H 'Origin: https://rekvizitai.vz.lt' -H 'Connection: keep-alive' -H 'Cookie: cf_clearance=L1LOgopAiIiZ_nmiuH9qCrfuWKHfqPGaYiczJIfdg5U-1691577179-0-1-afbe41c0.37dbf413.f8bf1e20-250.2.1691577179; CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%22369b58f2-acac-4d82-b25d-1bc1341aee25%22%7D; _ga_D931ERQW91=GS1.1.1691577171.7.1.1691577187.0.0.0; _ga=GA1.2.18986035.1689089881; visid_incap_1823587=f462hnsfRH6Ee+vE/NX551t3rWQAAAAAQUIPAAAAAACR+VXbsRUl3RV3HhyXFpw0; VzLtLoginHash=0GIy66Wp3ggVkeN0IC; _gid=GA1.2.821224099.1691419940; PHPSESSID=u7ckg1ihgoamsmre9f5nkjarjt; nlbi_1823587=WGd/WR93rlXnyu6Rq9G9pQAAAADQLTs8E6FtuDmADoMu8qwa; _gat_UA-724652-3=1; incap_ses_962_1823587=F2vrCXwHIXpR4eFf7rZZDWNr02QAAAAAvHRw6FC+6l6yxfPKF44GwA==' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: same-origin' -H 'Sec-Fetch-User: ?1' -H 'TE: trailers' --data-binary $'-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="name"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="word"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="code"\r\n\r\n304422799\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="codepvm"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="city"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="search_terms"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="street"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="employeesMin"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="employeesMax"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="salaryMin"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="salaryMax"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="debtMin"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="debtMax"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="transportMin"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="transportMax"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="salesRevenueMin"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="salesRevenueMax"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="netProfitMin"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="netProfitMax"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="registeredFrom"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="registeredTo"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="search_terms"\r\n\r\n\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="order"\r\n\r\n1\r\n-----------------------------6170295819296568743677679354\r\nContent-Disposition: form-data; name="resetFilter"\r\n\r\n0\r\n-----------------------------6170295819296568743677679354--\r\n'
@@ -65,20 +72,63 @@ class HomeController extends AbstractController {
         
 //        $browser_elemnts = $this->scraperUtility->processCurl($cookie_consent, $registration_code);
         $browser_elemnts = $this->scraperUtility->processCurl($cURL, $registration_code);
+=======
+        $cookie_consent = 'VzLtLoginHash=Ir5m8qAvlyaGfg0dbH; _gid=GA1.2.1022143044.1691396522; cf_clearance=wDvZaWd_cr3SgQZqK6FRlvnzTreGOSQWV2INUsu2sAw-1691439000-0-1-37c3310c.776000b8.60c26eec-250.2.1691439000; CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%2298b5c6bf-eebe-454f-a7fa-dcf9580b6b64%22%7D; PHPSESSID=53auht7ictbpnq96ar114beln2; _gat_UA-724652-3=1; _ga_D931ERQW91=GS1.1.1691439000.3.1.1691439703.0.0.0; _ga=GA1.1.303498819.1691396522';
+        
+        $url_decoded = urldecode($cookie_consent);
+        $url_decoded_array = explode(";", $url_decoded);
+        
+        $browser_elemnts = [];
+        
+        if (is_array($url_decoded_array) && !empty($url_decoded_array[0])){
+            if (str_contains($url_decoded_array[0], Constants::LINUX_CHROME['identifier'])){
+                $browser_elemnts = Constants::LINUX_CHROME;
+            }
+            else if(str_contains($url_decoded_array[0], Constants::LINUX_MOZILLA['identifier'])){
+                $browser_elemnts = Constants::LINUX_MOZILLA;
+            }
+            else if(str_contains($url_decoded_array[0], Constants::MAC_WINDOWS_COMMONER)){
+                if (!empty($url_decoded_array[2])){
+                    if (str_contains($url_decoded_array[2], Constants::MAC_CHROME['identifier'])){
+                        $browser_elemnts = Constants::MAC_CHROME;
+                    }
+                    else if(str_contains($url_decoded_array[2], Constants::WINDOWS_CHROME['identifier'])){
+                        $browser_elemnts = Constants::WINDOWS_CHROME;
+                    }
+                }
+            }
+        }
+>>>>>>> develop
 
         // Set request headers
         $header_elements = [
             $browser_elemnts['content-type'],
+<<<<<<< HEAD
             $browser_elemnts['cookie'],
             $browser_elemnts['user-agent']
         ];
 
+=======
+            'cookie: ' . $cookie_consent,
+            $browser_elemnts['user-agent']
+        ];
+
+        // Set request data
+        $registration_code = 306373468;
+        $data = $browser_elemnts['form-data'];
+        $form_data = str_replace("PUT_REGISTRATION_CODE_HERE", $registration_code, $data);
+
+>>>>>>> develop
         // Options from stream_context
         $options = [
             'http' => [
                 'header' => implode(PHP_EOL, $header_elements),
                 'method' => 'POST',
+<<<<<<< HEAD
                 'content' => $browser_elemnts['form-data'],
+=======
+                'content' => $form_data,
+>>>>>>> develop
             ],
         ];
 
@@ -107,7 +157,11 @@ class HomeController extends AbstractController {
         $company_turnover_url = $company_profile_url . "turnover";
 
         $company_profile_header = [
+<<<<<<< HEAD
             $browser_elemnts['cookie'],
+=======
+            'cookie: ' . $cookie_consent,
+>>>>>>> develop
             $browser_elemnts['user-agent']
         ];
 

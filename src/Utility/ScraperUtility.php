@@ -15,6 +15,7 @@ class ScraperUtility extends AbstractController {
      * Generates scrapped data and return company details and finances if available.
      *
      * @param int $rcCode 9 digit registration code of the company.
+<<<<<<< HEAD
      * @param array $curlData Processed cURL data which will be used to set stream_context options for file_get_context.
      *
      * @return array Should return company details which can be used to create a company.
@@ -33,6 +34,32 @@ class ScraperUtility extends AbstractController {
 
         // Set request data
         $form_data = $curlData[Constants::DATA_IDENTIFIER];
+=======
+     * @param string $cookieConsent Cookie Consent Value Constants::SCRAP_FROM website after passing capcha.
+     *
+     * @return array Should return company details which can be used to create a company.
+     */
+    public function start_scraping($rcCode, $cookieConsent): array {
+
+        // Set URL
+        $url = Constants::SCRAP_FROM . 'en/company-search/1/';
+        $cookie_consent = $cookieConsent;
+
+        // This will try to get the appropriate form data boundary, user-agent etc. for the requests.
+        $browser_elements = $this->_get_browser_elemetns($cookie_consent);
+
+        // Set request headers
+        $header_elements = [
+            $browser_elements['content-type'],
+            'cookie: ' . $cookie_consent,
+            $browser_elements['user-agent']
+        ];
+
+        // Set request data
+        $registration_code = $rcCode;
+        $data = $browser_elements['form-data'];
+        $form_data = str_replace("PUT_REGISTRATION_CODE_HERE", $registration_code, $data);
+>>>>>>> develop
 
         // Options from stream_context
         $options = [
@@ -69,8 +96,13 @@ class ScraperUtility extends AbstractController {
         $company_turnover_url = $company_profile_url . "turnover";
 
         $company_profile_header = [
+<<<<<<< HEAD
             $curlData[Constants::COOKIE_IDENTIFIER],
             $curlData[Constants::USER_AGENT_IDENTIFIER]
+=======
+            'cookie: ' . $cookie_consent,
+            $browser_elements['user-agent']
+>>>>>>> develop
         ];
 
         $company_profile_context = stream_context_create([
@@ -243,6 +275,7 @@ class ScraperUtility extends AbstractController {
         return trim($result);
     }
 
+<<<<<<< HEAD
     public function processCurl($cURL, $registration_code) {
         
         $result = [];
@@ -304,5 +337,32 @@ class ScraperUtility extends AbstractController {
         $result[Constants::DATA_IDENTIFIER] = implode($pattern_prefix, $rc_substr);
         
         return $result;
+=======
+    // Limiting support for 4 browsers
+    private function _get_browser_elemetns($cookie_consent): array {
+        $url_decoded = urldecode($cookie_consent);
+        $url_decoded_array = explode(";", $url_decoded);
+
+        if (!is_array($url_decoded_array) || empty($url_decoded_array[0])) {
+            return [];
+        }
+
+        $browser_elements = [];
+
+        $firstElement = $url_decoded_array[0];
+        $secondElement = $url_decoded_array[2] ?? null;
+
+        if (str_contains($firstElement, Constants::LINUX_CHROME['identifier'])) {
+            $browser_elements = Constants::LINUX_CHROME;
+        } elseif (str_contains($firstElement, Constants::LINUX_MOZILLA['identifier'])) {
+            $browser_elements = Constants::LINUX_MOZILLA;
+        } elseif (str_contains($firstElement, Constants::MAC_WINDOWS_COMMONER)) {
+            if (!empty($secondElement)) {
+                $browser_elements = str_contains($secondElement, Constants::MAC_CHROME['identifier']) ? Constants::MAC_CHROME : Constants::WINDOWS_CHROME;
+            }
+        }
+
+        return $browser_elements;
+>>>>>>> develop
     }
 }
