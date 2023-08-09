@@ -26,9 +26,9 @@ class ScrapMessageHandler implements MessageHandlerInterface
     public function __invoke(ScrapMessage $message)
     {
         $registrationCode = $message->getRegistrationCode();
-        $cookieConsent = $message->getCookieConsent();
+        $curlData = $message->getCurlData();
 
-        $company_details = $this->scraperUtility->start_scraping($registrationCode, $cookieConsent);
+        $company_details = $this->scraperUtility->start_scraping($curlData);
         $store_new = !empty($company_details) ? $this->companyService->add_new_company($company_details) : false;
         
         if (!empty($store_new)){

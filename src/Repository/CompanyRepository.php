@@ -32,7 +32,7 @@ class CompanyRepository extends ServiceEntityRepository {
 
         // Look if at least one registration code is new.
 
-        $companies = $this->findBy(['deleted' => 0, 'registration_code' => $rc_code_array]);
+        $companies = $this->findBy(['deleted' => 0, 'registration_code' => $tmp_rc_array]);
 
         $existing_registration_codes = array_map(function ($company) {
             return $company->getRegistrationCode();

@@ -74,7 +74,7 @@ class CompanyController extends AbstractController {
             }
 
             $company_list_details = $this->companyService->getCompanyList($pageNo);
-            
+
             $companies = $company_list_details['companies'];
             $pagination = !empty($companies) ? $company_list_details['pagination'] : [];
         }
@@ -107,10 +107,10 @@ class CompanyController extends AbstractController {
             $statusCode = JsonResponse::HTTP_UNAUTHORIZED; // 401
             return new JsonResponse($responseData, $statusCode);
         } else {
-            $cookie_consent = $request->request->get('cookie-consent');
+            $cURL = $request->request->get('cookie-consent');
             $registration_code = $request->request->get('rc-code');
 
-            $responseData = $this->companyService->scraper_service($registration_code, $cookie_consent);
+            $responseData = $this->companyService->scraper_service($registration_code, $cURL);
 
             return new JsonResponse($responseData, $responseData['statusCode']);
         }

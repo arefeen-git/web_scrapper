@@ -15,30 +15,24 @@ class ScraperUtility extends AbstractController {
      * Generates scrapped data and return company details and finances if available.
      *
      * @param int $rcCode 9 digit registration code of the company.
-     * @param string $cookieConsent Cookie Consent Value Constants::SCRAP_FROM website after passing capcha.
+     * @param array $curlData Processed cURL data which will be used to set stream_context options for file_get_context.
      *
      * @return array Should return company details which can be used to create a company.
      */
-    public function start_scraping($rcCode, $cookieConsent): array {
+    public function start_scraping($curlData): array {
 
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
-        $cookie_consent = $cookieConsent;
-
-        // This will try to get the appropriate form data boundary, user-agent etc. for the requests.
-        $browser_elements = $this->_get_browser_elemetns($cookie_consent);
 
         // Set request headers
         $header_elements = [
-            $browser_elements['content-type'],
-            'cookie: ' . $cookie_consent,
-            $browser_elements['user-agent']
+            $curlData[Constants::CONTENT_TYPE_IDENTIFIER],
+            $curlData[Constants::COOKIE_IDENTIFIER],
+            $curlData[Constants::USER_AGENT_IDENTIFIER]
         ];
 
         // Set request data
-        $registration_code = $rcCode;
-        $data = $browser_elements['form-data'];
-        $form_data = str_replace("PUT_REGISTRATION_CODE_HERE", $registration_code, $data);
+        $form_data = $curlData[Constants::DATA_IDENTIFIER];
 
         // Options from stream_context
         $options = [
@@ -75,8 +69,8 @@ class ScraperUtility extends AbstractController {
         $company_turnover_url = $company_profile_url . "turnover";
 
         $company_profile_header = [
-            'cookie: ' . $cookie_consent,
-            $browser_elements['user-agent']
+            $curlData[Constants::COOKIE_IDENTIFIER],
+            $curlData[Constants::USER_AGENT_IDENTIFIER]
         ];
 
         $company_profile_context = stream_context_create([
@@ -249,30 +243,66 @@ class ScraperUtility extends AbstractController {
         return trim($result);
     }
 
-    // Limiting support for 4 browsers
-    private function _get_browser_elemetns($cookie_consent): array {
-        $url_decoded = urldecode($cookie_consent);
-        $url_decoded_array = explode(";", $url_decoded);
+    public function processCurl($cURL, $registration_code) {
+        
+        $result = [];
+        $matches = [];
 
-        if (!is_array($url_decoded_array) || empty($url_decoded_array[0])) {
-            return [];
+        if (str_contains($cURL, Constants::CHROME_DATA_PREFIX)){
+            $browser_prefix = Constants::CHROME_DATA_PREFIX;
+            $pattern_form = '/' . $browser_prefix . '\$\'([\s\S]+?)\'/';
+            $cookie_prefix = Constants::COOKIE_IDENTIFIER;
+            $user_agent = Constants::USER_AGENT_IDENTIFIER;
+            $content_type = Constants::CONTENT_TYPE_IDENTIFIER;
         }
-
-        $browser_elements = [];
-
-        $firstElement = $url_decoded_array[0];
-        $secondElement = $url_decoded_array[2] ?? null;
-
-        if (str_contains($firstElement, Constants::LINUX_CHROME['identifier'])) {
-            $browser_elements = Constants::LINUX_CHROME;
-        } elseif (str_contains($firstElement, Constants::LINUX_MOZILLA['identifier'])) {
-            $browser_elements = Constants::LINUX_MOZILLA;
-        } elseif (str_contains($firstElement, Constants::MAC_WINDOWS_COMMONER)) {
-            if (!empty($secondElement)) {
-                $browser_elements = str_contains($secondElement, Constants::MAC_CHROME['identifier']) ? Constants::MAC_CHROME : Constants::WINDOWS_CHROME;
+        else if (str_contains($cURL, Constants::MOZILLA_DATA_PREFIX)){
+            $browser_prefix = Constants::MOZILLA_DATA_PREFIX;
+            $pattern_form = "/--data-binary \\\$'((?:[^']|\\\\')*)'/s";
+            $cookie_prefix = ucfirst(Constants::COOKIE_IDENTIFIER);
+            $user_agent = Constants::USER_AGENT_MOZILLA;
+            $content_type = Constants::CONTENT_TYPE_MOZILLA;
+        }
+        
+        // Setting contetn/form-data
+        if (!empty($browser_prefix)) {
+            if (preg_match($pattern_form, $cURL, $matches)) {
+                $result[Constants::DATA_IDENTIFIER] = !empty($matches[1]) ? trim($matches[1]) : null;
+            }
+        }
+        
+        // Setting cookie
+        if (str_contains($cURL, $cookie_prefix)) {
+            $pattern_cookie = "/" . $cookie_prefix . ": ([^']+)/";
+            if (preg_match($pattern_cookie, $cURL, $matches)) {
+                $result[Constants::COOKIE_IDENTIFIER] = !empty($matches[1]) ? $cookie_prefix . ": " . trim($matches[1]) : null;
+            }
+        }
+        
+        // user agent
+        if (str_contains($cURL, $user_agent)) {
+            $pattern_agent = "/" . $user_agent . ": ([^']+)/";
+            if (preg_match($pattern_agent, $cURL, $matches)) {
+                $result[Constants::USER_AGENT_IDENTIFIER] = !empty($matches[1]) ? $user_agent . ": " . trim($matches[1]) : null;
             }
         }
 
-        return $browser_elements;
+        // content type
+        if (str_contains($cURL, $content_type)) {
+            $pattern_ctype = "/" . $content_type . ": ([^']+)/";
+            if (preg_match($pattern_ctype, $cURL, $matches)) {
+                $result[Constants::CONTENT_TYPE_IDENTIFIER] = !empty($matches[1]) ? $content_type . ": " . trim($matches[1]) : null;
+            }
+        }
+        
+        // Define the pattern to replace the cURL registration code. #name="code"\r\n\r\n
+        $pattern_prefix = ($browser_prefix == Constants::CHROME_DATA_PREFIX) ? 'name="code"\r\n\r\n' : 'name="code"';
+        $rc_substr = explode($pattern_prefix, $result[Constants::DATA_IDENTIFIER]);
+        
+        $pattern = '/^\d+/m';
+        $rc_substr[1] = preg_replace($pattern, $registration_code, $rc_substr[1]);
+        
+        $result[Constants::DATA_IDENTIFIER] = implode($pattern_prefix, $rc_substr);
+        
+        return $result;
     }
 }

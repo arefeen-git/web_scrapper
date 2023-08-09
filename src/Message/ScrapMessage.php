@@ -10,12 +10,12 @@ namespace App\Message;
 class ScrapMessage
 {
     private $registrationCode;
-    private $cookieConsent;
+    private $curlData;
 
-    public function __construct(string $registrationCode, string $cookieConsent)
+    public function __construct(string $registrationCode, array $curlData)
     {
         $this->registrationCode = $registrationCode;
-        $this->cookieConsent = $cookieConsent;
+        $this->curlData = $curlData;
     }
 
     public function getRegistrationCode(): string
@@ -23,9 +23,9 @@ class ScrapMessage
         return $this->registrationCode;
     }
 
-    public function getCookieConsent(): string
+    public function getCurlData(): array
     {
-        return $this->cookieConsent;
+        return $this->curlData;
     }
 }
 

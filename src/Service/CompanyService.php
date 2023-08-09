@@ -14,6 +14,7 @@ use App\Service\RedisService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Message\ScrapMessage;
+use App\Utility\ScraperUtility;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class CompanyService {
@@ -22,17 +23,20 @@ class CompanyService {
     private MessageBusInterface $messageBusInterface;
     private EntityManagerInterface $entityManager;
     private RedisService $redisService;
+    private ScraperUtility $scraperUtility;
 
     public function __construct(
             CompanyRepository $companyRepository,
             MessageBusInterface $messageBusInterface,
             EntityManagerInterface $entityManager,
-            RedisService $redisService
+            RedisService $redisService,
+            ScraperUtility $scraperUtility
     ) {
         $this->companyRepository = $companyRepository;
         $this->messageBusInterface = $messageBusInterface;
         $this->entityManager = $entityManager;
         $this->redisService = $redisService;
+        $this->scraperUtility = $scraperUtility;
     }
 
     public function getCompanyList(int $pageNo = 1): array {
@@ -142,8 +146,8 @@ class CompanyService {
         return $companies;
     }
 
-    public function scraper_service($registration_code, $cookie_consent) {
-        
+    public function scraper_service($registration_code, $cURL) {
+
         $filtered_rc_codes = $this->companyRepository->checkIfRegistrationCodeExists($registration_code);
 
         // If empty, then all codes (companies) exist already
@@ -151,19 +155,36 @@ class CompanyService {
             $responseData = [
                 'message' => 'Provided Registration Code(s) Already Exists',
             ];
-            
+
             $responseData['statusCode'] = JsonResponse::HTTP_BAD_REQUEST;
 
             return $responseData;
         } else {
+            // Else, $filtered_rc_codes['new'] will have at least one new value.
             $rc_codes = $filtered_rc_codes['new'];
 
             foreach ($rc_codes as $rc_code) {
-                // Scrapping starting in 3, 2, 1 ...
-                $message = new ScrapMessage($rc_code, $cookie_consent);
-                $this->messageBusInterface->dispatch($message);
+
+                $formatted_cURL_data = $this->scraperUtility->processCurl($cURL, $rc_code);
+
+                if  (
+                        empty($formatted_cURL_data[Constants::COOKIE_IDENTIFIER]) || empty($formatted_cURL_data[Constants::DATA_IDENTIFIER]) ||
+                        empty($formatted_cURL_data[Constants::USER_AGENT_IDENTIFIER]) || empty($formatted_cURL_data[Constants::CONTENT_TYPE_IDENTIFIER])
+                    ) 
+                {
+                    // Need to work on response message.
+                    $responseData = [
+                        'message' => "Couldn't process cURL for $rc_code. Please check and submit the cURL again.",
+                        'statusCode' => JsonResponse::HTTP_UNAUTHORIZED // 401
+                    ];
+                    
+                } else {
+                    // Scrapping starting in 3, 2, 1 ...
+                    $message = new ScrapMessage($rc_code, $formatted_cURL_data);
+                    $this->messageBusInterface->dispatch($message);
+                }
             }
-            
+
             $responseData['message'] = ' Scraping Started for ' . implode(', ', $rc_codes);
             $responseData['statusCode'] = JsonResponse::HTTP_OK;
 
@@ -172,14 +193,14 @@ class CompanyService {
     }
 
     public function add_new_company($company_details): int {
-        
+
         // Extra validation just to catch duplicate reg codes which may pass in the interval of multiple consumers/workers.
         $checker = $this->companyRepository->checkIfRegistrationCodeExists($company_details['registration_code']);
-        
-        if (empty($checker)){
+
+        if (empty($checker)) {
             return false;
         }
-        
+
         // Create a new Company entity and set its properties
         $company = new Company();
         $company->setRegistrationCode($company_details['registration_code']);
@@ -237,24 +258,24 @@ class CompanyService {
         if (empty($company)) {
             return false;
         }
-        
+
         // Setting temporary registration code, otherwise if someone want to store deleted registration code
         // an error would be given as the schema declares registration_code as a unique field.
-        
+
         $dateTime = new \DateTime();
         $day = $dateTime->format('d');
         $hour = $dateTime->format('H');
         $minute = $dateTime->format('i');
         $second = $dateTime->format('s');
-        
-        $tmp_rc = rand(1,9) . $day . $hour . $minute . $second;
+
+        $tmp_rc = rand(1, 9) . $day . $hour . $minute . $second;
         $company->setRegistrationCode($tmp_rc);
-        
+
         // Storing original rc for future reference
         $details = $company->getDetails();
         $details['original_registration_code'] = $registration_code;
         $company->setDetails($details);
-        
+
         $company->setDeleted(true);
         $currentDateTime = new \DateTimeImmutable();
         $company->setDeletedAt($currentDateTime);
