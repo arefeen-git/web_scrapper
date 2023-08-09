@@ -55,9 +55,14 @@ class CompanyController extends AbstractController {
                 ]);
             }
         } else {
-            // Genrate CSRF Token
-            $token = $this->tokenGenerator->generateToken();
-            $request->getSession()->set('company_item_csrf_token', $token);
+            // Check if token exist
+            $token = $request->getSession()->get('company_item_csrf_token');
+            
+            if (empty($token)) {
+                // Genrate CSRF Token
+                $token = $this->tokenGenerator->generateToken();
+                $request->getSession()->set('company_item_csrf_token', $token);
+            }
 
             // Get the pageNo from the route parameters.
             $pageNo = (int) $request->attributes->get('pageNo', 1);
@@ -118,9 +123,15 @@ class CompanyController extends AbstractController {
 
     #[Route('/new', name: 'app_company_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response {
-        // Generate and store the CSRF token in the session
-        $token = $this->tokenGenerator->generateToken();
-        $request->getSession()->set('company_item_csrf_token', $token);
+        
+        // Check if token exist
+        $token = $request->getSession()->get('company_item_csrf_token');
+
+        if (empty($token)) {
+            // Genrate CSRF Token
+            $token = $this->tokenGenerator->generateToken();
+            $request->getSession()->set('company_item_csrf_token', $token);
+        }
 
         return $this->render('company/new.html.twig', [
                     'csrf_token' => $token
@@ -158,9 +169,15 @@ class CompanyController extends AbstractController {
 
             return $this->redirectToRoute('app_company_index', ['pageNo' => 1]);
         } else {
+            
+            // Check if token exist
+            $token = $request->getSession()->get('company_item_csrf_token');
 
-            $token = $this->tokenGenerator->generateToken();
-            $request->getSession()->set('company_item_csrf_token', $token);
+            if (empty($token)) {
+                // Genrate CSRF Token
+                $token = $this->tokenGenerator->generateToken();
+                $request->getSession()->set('company_item_csrf_token', $token);
+            }
 
             if (!empty($rcCode)) {
                 $company = $this->companyService->searchByRegistrationCode($rcCode);
