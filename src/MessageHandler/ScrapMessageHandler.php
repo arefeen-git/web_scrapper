@@ -28,14 +28,14 @@ class ScrapMessageHandler implements MessageHandlerInterface
         $registrationCode = $message->getRegistrationCode();
         $curlData = $message->getCurlData();
 
-        $company_details = $this->scraperUtility->start_scraping($curlData);
+        $company_details = $this->scraperUtility->start_scraping($registrationCode, $curlData);
         $store_new = !empty($company_details) ? $this->companyService->add_new_company($company_details) : false;
         
         if (!empty($store_new)){
-            echo "Reg Code : " . $registrationCode . " Stored in ID : " . $store_new . " . ";
+            echo "Reg Code : " . $registrationCode . " Stored in ID : " . $store_new . ". " . PHP_EOL;
         }
         else{
-            echo "Reg Code : " . $registrationCode . " already exists / Provided Cookie Consent not working. Search company list to check if company already exists. ";
+            echo "Reg Code : " . $registrationCode . " already exists / Provided Cookie Consent not working. Search company list to check if company already exists. "  . PHP_EOL;
         }
     }
 }

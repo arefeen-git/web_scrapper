@@ -14,36 +14,43 @@ class ScraperUtility extends AbstractController {
     /**
      * Generates scrapped data and return company details and finances if available.
      *
-     * @param int $rcCode 9 digit registration code of the company.
+     * @param int $registrationCode 9 digit registration code of the company.
      * @param array $curlData Processed cURL data which will be used to set stream_context options for file_get_context.
      *
      * @return array Should return company details which can be used to create a company.
      */
-    public function start_scraping($curlData): array {
+    public function start_scraping($registrationCode, $curlData): array {
 
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
 
         // Set request headers
+        $content_type = $curlData[Constants::CONTENT_TYPE_IDENTIFIER];
+        $cookie = $curlData[Constants::COOKIE_IDENTIFIER];
+        $user_agent = $curlData[Constants::USER_AGENT_IDENTIFIER];
+        $data = $curlData[Constants::DATA_IDENTIFIER];
+        
+        unset($curlData);
+        
         $header_elements = [
-            $curlData[Constants::CONTENT_TYPE_IDENTIFIER],
-            $curlData[Constants::COOKIE_IDENTIFIER],
-            $curlData[Constants::USER_AGENT_IDENTIFIER]
+            $content_type,
+            $cookie,
+            $user_agent
         ];
 
         // Set request data
-        $form_data = $curlData[Constants::DATA_IDENTIFIER];
+        $form_data = str_replace(Constants::REPLCAING_TEXT, $registrationCode, $data);
 
         // Options from stream_context
         $options = [
             'http' => [
                 'header' => implode(PHP_EOL, $header_elements),
                 'method' => 'POST',
-                'content' => $form_data,
-            ],
+                'content' => $form_data
+            ]
         ];
 
-        $context = stream_context_create($options);
+        $context = stream_context_create($options);        
         $html_chunk = file_get_contents($url, false, $context);
         $html_array = explode(PHP_EOL, $html_chunk);
 
@@ -69,8 +76,8 @@ class ScraperUtility extends AbstractController {
         $company_turnover_url = $company_profile_url . "turnover";
 
         $company_profile_header = [
-            $curlData[Constants::COOKIE_IDENTIFIER],
-            $curlData[Constants::USER_AGENT_IDENTIFIER]
+            $cookie,
+            $user_agent
         ];
 
         $company_profile_context = stream_context_create([
@@ -243,7 +250,7 @@ class ScraperUtility extends AbstractController {
         return trim($result);
     }
 
-    public function processCurl($cURL, $registration_code) {
+    public function processCurl($cURL) {
         
         $result = [];
         $matches = [];
@@ -267,6 +274,24 @@ class ScraperUtility extends AbstractController {
         if (!empty($browser_prefix)) {
             if (preg_match($pattern_form, $cURL, $matches)) {
                 $result[Constants::DATA_IDENTIFIER] = !empty($matches[1]) ? trim($matches[1]) : null;
+                
+                /*
+                 * IMPORTANT : USE '\n' & '\r' NOT "\n" & "\r".
+                 */
+                $tmp_val = explode('\n', $result[Constants::DATA_IDENTIFIER]);
+                
+                if (count($tmp_val) == 1){
+                    $tmp_val = explode(PHP_EOL, $result[Constants::DATA_IDENTIFIER]);
+                }
+                
+                foreach($tmp_val as $key => $form_val){
+                    if (str_contains($form_val, 'name="code"')){
+                        $tmp_val[$key + 2] = Constants::REPLCAING_TEXT . '\r'; // Don't forget the trailing \r.
+                        break;
+                    }
+                }
+                
+                $result[Constants::DATA_IDENTIFIER] = implode('\n', $tmp_val);
             }
         }
         
@@ -293,15 +318,6 @@ class ScraperUtility extends AbstractController {
                 $result[Constants::CONTENT_TYPE_IDENTIFIER] = !empty($matches[1]) ? $content_type . ": " . trim($matches[1]) : null;
             }
         }
-        
-        // Define the pattern to replace the cURL registration code. #name="code"\r\n\r\n
-        $pattern_prefix = ($browser_prefix == Constants::CHROME_DATA_PREFIX) ? 'name="code"\r\n\r\n' : 'name="code"';
-        $rc_substr = explode($pattern_prefix, $result[Constants::DATA_IDENTIFIER]);
-        
-        $pattern = '/^\d+/m';
-        $rc_substr[1] = preg_replace($pattern, $registration_code, $rc_substr[1]);
-        
-        $result[Constants::DATA_IDENTIFIER] = implode($pattern_prefix, $rc_substr);
         
         return $result;
     }

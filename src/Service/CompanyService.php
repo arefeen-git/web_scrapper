@@ -162,27 +162,26 @@ class CompanyService {
         } else {
             // Else, $filtered_rc_codes['new'] will have at least one new value.
             $rc_codes = $filtered_rc_codes['new'];
+            
+            $formatted_cURL_data = $this->scraperUtility->processCurl($cURL);
+            
+            if (
+                    empty($formatted_cURL_data[Constants::COOKIE_IDENTIFIER]) || empty($formatted_cURL_data[Constants::DATA_IDENTIFIER]) ||
+                    empty($formatted_cURL_data[Constants::USER_AGENT_IDENTIFIER]) || empty($formatted_cURL_data[Constants::CONTENT_TYPE_IDENTIFIER])
+            ) {
+                // Need to work on response message.
+                $responseData = [
+                    'message' => "Couldn't process cURL. Please check and submit the cURL again.",
+                    'statusCode' => JsonResponse::HTTP_UNAUTHORIZED // 401
+                ];
+                
+                return $responseData;
+            }
 
             foreach ($rc_codes as $rc_code) {
-
-                $formatted_cURL_data = $this->scraperUtility->processCurl($cURL, $rc_code);
-
-                if  (
-                        empty($formatted_cURL_data[Constants::COOKIE_IDENTIFIER]) || empty($formatted_cURL_data[Constants::DATA_IDENTIFIER]) ||
-                        empty($formatted_cURL_data[Constants::USER_AGENT_IDENTIFIER]) || empty($formatted_cURL_data[Constants::CONTENT_TYPE_IDENTIFIER])
-                    ) 
-                {
-                    // Need to work on response message.
-                    $responseData = [
-                        'message' => "Couldn't process cURL for $rc_code. Please check and submit the cURL again.",
-                        'statusCode' => JsonResponse::HTTP_UNAUTHORIZED // 401
-                    ];
-                    
-                } else {
-                    // Scrapping starting in 3, 2, 1 ...
-                    $message = new ScrapMessage($rc_code, $formatted_cURL_data);
-                    $this->messageBusInterface->dispatch($message);
-                }
+                // Scrapping starting in 3, 2, 1 ...
+                $message = new ScrapMessage($rc_code, $formatted_cURL_data);
+                $this->messageBusInterface->dispatch($message);
             }
 
             $responseData['message'] = ' Scraping Started for ' . implode(', ', $rc_codes);

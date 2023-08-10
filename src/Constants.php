@@ -11,6 +11,7 @@ class Constants {
     
     public const SCRAP_FROM = 'https://rekvizitai.vz.lt/';
     
+    public const REPLCAING_TEXT = "PUT_YOUR_REGISTRATION_CODE_HERE";
     public const CHROME_DATA_PREFIX = "--data-raw ";
     public const MOZILLA_DATA_PREFIX = "--data-binary ";
     
