@@ -165,18 +165,18 @@ class CompanyService {
             
             $formatted_cURL_data = $this->scraperUtility->processCurl($cURL);
             
-            if (
-                    empty($formatted_cURL_data[Constants::COOKIE_IDENTIFIER]) || empty($formatted_cURL_data[Constants::DATA_IDENTIFIER]) ||
-                    empty($formatted_cURL_data[Constants::USER_AGENT_IDENTIFIER]) || empty($formatted_cURL_data[Constants::CONTENT_TYPE_IDENTIFIER])
+            if (empty($formatted_cURL_data[Constants::COOKIE_IDENTIFIER]) ||
+                empty($formatted_cURL_data[Constants::USER_AGENT_IDENTIFIER]) ||
+                empty($formatted_cURL_data[Constants::CONTENT_TYPE_IDENTIFIER])
             ) {
-                // Need to work on response message.
                 $responseData = [
-                    'message' => "Couldn't process cURL. Please check and submit the cURL again.",
+                    'message' => "Unable to process the cURL request. Please check and try again.",
                     'statusCode' => JsonResponse::HTTP_UNAUTHORIZED // 401
                 ];
-                
+
                 return $responseData;
             }
+
 
             foreach ($rc_codes as $rc_code) {
                 // Scrapping starting in 3, 2, 1 ...

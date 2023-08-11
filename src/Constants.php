@@ -12,17 +12,10 @@ class Constants {
     public const SCRAP_FROM = 'https://rekvizitai.vz.lt/';
     
     public const REPLCAING_TEXT = "PUT_YOUR_REGISTRATION_CODE_HERE";
-    public const CHROME_DATA_PREFIX = "--data-raw ";
-    public const MOZILLA_DATA_PREFIX = "--data-binary ";
     
     public const USER_AGENT_IDENTIFIER = "user-agent";
     public const CONTENT_TYPE_IDENTIFIER = "content-type";
     public const COOKIE_IDENTIFIER = "cookie";
-    public const DATA_IDENTIFIER = "form-data";
-    
-    // As these are used in reg-exp, these are case sensitive.
-    public const USER_AGENT_MOZILLA = "User-Agent";
-    public const CONTENT_TYPE_MOZILLA = "Content-Type";
 
     public const ADDRESS    = 'ADDRESS';
     public const MOBILE     = 'MOBILE';

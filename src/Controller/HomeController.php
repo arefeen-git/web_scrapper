@@ -44,8 +44,8 @@ class HomeController extends AbstractController {
                     -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
                     -H 'accept-language: en-US,en;q=0.9' \
                     -H 'cache-control: max-age=0' \
-                    -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundarydbc4LyQHaZNJLnls' \
-                    -H 'cookie: CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%223e8df365-6f2c-4c1a-80ad-d5c902d78b97%22%7D; _gid=GA1.2.1146864184.1691324377; VzLtLoginHash=iKagzxDfJtK9Im0OvZ; PHPSESSID=bl91pd6r8n5nbrbbt4s5q5qmr6; cf_clearance=M9X8f1eEU9NmOZPDDjbULCyyy1c7ZxEg0hF5JZFdd4k-1691707756-0-1-dd86ce74.5809868.8a879194-250.2.1691707756; _gat_UA-724652-3=1; _ga_D931ERQW91=GS1.1.1691707743.116.1.1691707757.0.0.0; _ga=GA1.1.1096950485.1688928483' \
+                    -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundary2XcgXR0rF9EcvgMI' \
+                    -H 'cookie: CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%223e8df365-6f2c-4c1a-80ad-d5c902d78b97%22%7D; _gid=GA1.2.1146864184.1691324377; VzLtLoginHash=iKagzxDfJtK9Im0OvZ; PHPSESSID=bl91pd6r8n5nbrbbt4s5q5qmr6; cf_clearance=zYRdgDvolOYIB6hsz3KC6Ji9b.YBPRbtmlG2r_W2WMw-1691711384-0-1-dd86ce74.f35e1252.8a879194-250.2.1691711384; _gat_UA-724652-3=1; _ga_D931ERQW91=GS1.1.1691711136.117.1.1691711399.0.0.0; _ga=GA1.1.1096950485.1688928483' \
                     -H 'origin: https://rekvizitai.vz.lt' \
                     -H 'referer: https://rekvizitai.vz.lt/en/company-search/' \
                     -H 'sec-ch-ua: "Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"' \
@@ -57,7 +57,7 @@ class HomeController extends AbstractController {
                     -H 'sec-fetch-user: ?1' \
                     -H 'upgrade-insecure-requests: 1' \
                     -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36' \
-                    --data-raw $'------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="name"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="word"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="code"\r\n\r\n300040364\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="codepvm"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="city"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="search_terms"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="street"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="employeesMin"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="employeesMax"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="salaryMin"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="salaryMax"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="debtMin"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="debtMax"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="transportMin"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="transportMax"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="salesRevenueMin"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="salesRevenueMax"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="netProfitMin"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="netProfitMax"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="registeredFrom"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="registeredTo"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="search_terms"\r\n\r\n\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="order"\r\n\r\n1\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls\r\nContent-Disposition: form-data; name="resetFilter"\r\n\r\n0\r\n------WebKitFormBoundarydbc4LyQHaZNJLnls--\r\n' \
+                    --data-raw $'------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="name"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="word"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="code"\r\n\r\n300040364\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="codepvm"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="city"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="search_terms"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="street"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="employeesMin"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="employeesMax"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="salaryMin"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="salaryMax"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="debtMin"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="debtMax"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="transportMin"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="transportMax"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="salesRevenueMin"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="salesRevenueMax"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="netProfitMin"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="netProfitMax"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="registeredFrom"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="registeredTo"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="search_terms"\r\n\r\n\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="order"\r\n\r\n1\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI\r\nContent-Disposition: form-data; name="resetFilter"\r\n\r\n0\r\n------WebKitFormBoundary2XcgXR0rF9EcvgMI--\r\n' \
                     --compressed
                 EOT;
         
@@ -72,8 +72,12 @@ class HomeController extends AbstractController {
         $user_agent     = $browser_elemnts['user-agent'];
         $data           = $browser_elemnts['form-data'];
         
+        print_r($data); die();
+        
         unset($cURL);
         unset($browser_elemnts);
+        
+        
 
         // Set request headers
         $header_elements = [
@@ -84,7 +88,7 @@ class HomeController extends AbstractController {
         
         $form_data = str_replace(Constants::REPLCAING_TEXT, $registration_code, $data);
         
-        print_r($form_data); die();
+//        print_r($form_data); die();
 
         // Options from stream_context
         $options = [
@@ -98,8 +102,6 @@ class HomeController extends AbstractController {
         $context = stream_context_create($options);        
         $html_chunk = file_get_contents($url, false, $context);
         $html_array = explode(PHP_EOL, $html_chunk);
-        
-        print_r($html_chunk); die();
 
         foreach ($html_array as $key => $val) {
             if (strpos($val, "No records found. Please refine the search criteria") !== false) {

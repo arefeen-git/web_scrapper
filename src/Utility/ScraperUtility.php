@@ -24,33 +24,34 @@ class ScraperUtility extends AbstractController {
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
 
-        // Set request headers
+        // Set request data & headers
+        $data = array(
+            'code' => $registrationCode,
+            'order' => '1',
+            'resetFilter' => '0'
+        );
+
         $content_type = $curlData[Constants::CONTENT_TYPE_IDENTIFIER];
-        $cookie = $curlData[Constants::COOKIE_IDENTIFIER];
         $user_agent = $curlData[Constants::USER_AGENT_IDENTIFIER];
-        $data = $curlData[Constants::DATA_IDENTIFIER];
-        
+        $cookie = $curlData[Constants::COOKIE_IDENTIFIER];
+
         unset($curlData);
-        
-        $header_elements = [
-            $content_type,
-            $cookie,
-            $user_agent
-        ];
 
-        // Set request data
-        $form_data = str_replace(Constants::REPLCAING_TEXT, $registrationCode, $data);
-
-        // Options from stream_context
-        $options = [
-            'http' => [
-                'header' => implode(PHP_EOL, $header_elements),
+        // Options for stream_context
+        $options = array(
+            'http' => array(
                 'method' => 'POST',
-                'content' => $form_data
-            ]
-        ];
+                'content' => http_build_query($data),
+                'header' => implode("\r\n", array(
+                    'cache-control: max-age=0',
+                    $content_type,
+                    $user_agent,
+                    $cookie
+                ))
+            )
+        );
 
-        $context = stream_context_create($options);        
+        $context = stream_context_create($options);
         $html_chunk = file_get_contents($url, false, $context);
         $html_array = explode(PHP_EOL, $html_chunk);
 
@@ -75,16 +76,16 @@ class ScraperUtility extends AbstractController {
         $company_profile_url = $firstLink->getAttribute('href');
         $company_turnover_url = $company_profile_url . "turnover";
 
-        $company_profile_header = [
-            $cookie,
-            $user_agent
-        ];
-
-        $company_profile_context = stream_context_create([
-            'http' => [
-                'header' => implode("\r\n", $company_profile_header)
-            ]
-        ]);
+        $company_profile_context = stream_context_create(array(
+            'http' => array(
+                'method' => 'GET',
+                'header' => implode("\r\n", array(
+                    'cache-control: max-age=0',
+                    $cookie,
+                    $user_agent
+                ))
+            )
+        ));
 
         // Extracting Company Details from Company Profile URL
         $company_profile_html_chunk = file_get_contents($company_profile_url, false, $company_profile_context);
@@ -251,74 +252,31 @@ class ScraperUtility extends AbstractController {
     }
 
     public function processCurl($cURL) {
-        
         $result = [];
         $matches = [];
 
-        if (str_contains($cURL, Constants::CHROME_DATA_PREFIX)){
-            $browser_prefix = Constants::CHROME_DATA_PREFIX;
-            $pattern_form = '/' . $browser_prefix . '\$\'([\s\S]+?)\'/';
-            $cookie_prefix = Constants::COOKIE_IDENTIFIER;
-            $user_agent = Constants::USER_AGENT_IDENTIFIER;
-            $content_type = Constants::CONTENT_TYPE_IDENTIFIER;
-        }
-        else if (str_contains($cURL, Constants::MOZILLA_DATA_PREFIX)){
-            $browser_prefix = Constants::MOZILLA_DATA_PREFIX;
-            $pattern_form = "/--data-binary \\\$'((?:[^']|\\\\')*)'/s";
-            $cookie_prefix = ucfirst(Constants::COOKIE_IDENTIFIER);
-            $user_agent = Constants::USER_AGENT_MOZILLA;
-            $content_type = Constants::CONTENT_TYPE_MOZILLA;
-        }
-        
-        // Setting contetn/form-data
-        if (!empty($browser_prefix)) {
-            if (preg_match($pattern_form, $cURL, $matches)) {
-                $result[Constants::DATA_IDENTIFIER] = !empty($matches[1]) ? trim($matches[1]) : null;
-                
-                /*
-                 * IMPORTANT : USE '\n' & '\r' NOT "\n" & "\r".
-                 */
-                $tmp_val = explode('\n', $result[Constants::DATA_IDENTIFIER]);
-                
-                if (count($tmp_val) == 1){
-                    $tmp_val = explode(PHP_EOL, $result[Constants::DATA_IDENTIFIER]);
-                }
-                
-                foreach($tmp_val as $key => $form_val){
-                    if (str_contains($form_val, 'name="code"')){
-                        $tmp_val[$key + 2] = Constants::REPLCAING_TEXT . '\r'; // Don't forget the trailing \r.
-                        break;
-                    }
-                }
-                
-                $result[Constants::DATA_IDENTIFIER] = implode('\n', $tmp_val);
-            }
-        }
-        
-        // Setting cookie
-        if (str_contains($cURL, $cookie_prefix)) {
-            $pattern_cookie = "/" . $cookie_prefix . ": ([^']+)/";
+        // Getting cookie, agent & content-type from provided cURL.
+        if (str_contains($cURL, Constants::COOKIE_IDENTIFIER)) {
+            $pattern_cookie = "/" . Constants::COOKIE_IDENTIFIER . ": ([^']+)/";
             if (preg_match($pattern_cookie, $cURL, $matches)) {
-                $result[Constants::COOKIE_IDENTIFIER] = !empty($matches[1]) ? $cookie_prefix . ": " . trim($matches[1]) : null;
-            }
-        }
-        
-        // user agent
-        if (str_contains($cURL, $user_agent)) {
-            $pattern_agent = "/" . $user_agent . ": ([^']+)/";
-            if (preg_match($pattern_agent, $cURL, $matches)) {
-                $result[Constants::USER_AGENT_IDENTIFIER] = !empty($matches[1]) ? $user_agent . ": " . trim($matches[1]) : null;
+                $result[Constants::COOKIE_IDENTIFIER] = !empty($matches[1]) ? Constants::COOKIE_IDENTIFIER . ": " . trim($matches[1]) : null;
             }
         }
 
-        // content type
-        if (str_contains($cURL, $content_type)) {
-            $pattern_ctype = "/" . $content_type . ": ([^']+)/";
-            if (preg_match($pattern_ctype, $cURL, $matches)) {
-                $result[Constants::CONTENT_TYPE_IDENTIFIER] = !empty($matches[1]) ? $content_type . ": " . trim($matches[1]) : null;
+        if (str_contains($cURL, Constants::USER_AGENT_IDENTIFIER)) {
+            $pattern_agent = "/" . Constants::USER_AGENT_IDENTIFIER . ": ([^']+)/";
+            if (preg_match($pattern_agent, $cURL, $matches)) {
+                $result[Constants::USER_AGENT_IDENTIFIER] = !empty($matches[1]) ? Constants::USER_AGENT_IDENTIFIER . ": " . trim($matches[1]) : null;
             }
         }
-        
+
+        if (str_contains($cURL, Constants::CONTENT_TYPE_IDENTIFIER)) {
+            $pattern_ctype = "/" . Constants::CONTENT_TYPE_IDENTIFIER . ": ([^']+)/";
+            if (preg_match($pattern_ctype, $cURL, $matches)) {
+                $result[Constants::CONTENT_TYPE_IDENTIFIER] = !empty($matches[1]) ? Constants::CONTENT_TYPE_IDENTIFIER . ": " . trim($matches[1]) : null;
+            }
+        }
+
         return $result;
     }
 }

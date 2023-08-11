@@ -113,6 +113,7 @@ class CompanyController extends AbstractController {
             return new JsonResponse($responseData, $statusCode);
         } else {
             $cURL = $request->request->get('cookie-consent');
+            $request->request->remove('cookie-consent'); // Removing for caching issue of long string.
             $registration_code = $request->request->get('rc-code');
 
             $responseData = $this->companyService->scraper_service($registration_code, $cURL);
