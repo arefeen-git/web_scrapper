@@ -43,7 +43,7 @@ class ScraperUtility extends AbstractController {
                 'method' => 'POST',
                 'content' => http_build_query($data),
                 'header' => implode("\r\n", array(
-                    'cache-control: max-age=0',
+                    'Cache-Control: no-cache',
                     $content_type,
                     $user_agent,
                     $cookie
@@ -256,25 +256,19 @@ class ScraperUtility extends AbstractController {
         $matches = [];
 
         // Getting cookie, agent & content-type from provided cURL.
-        if (str_contains($cURL, Constants::COOKIE_IDENTIFIER)) {
-            $pattern_cookie = "/" . Constants::COOKIE_IDENTIFIER . ": ([^']+)/";
-            if (preg_match($pattern_cookie, $cURL, $matches)) {
-                $result[Constants::COOKIE_IDENTIFIER] = !empty($matches[1]) ? Constants::COOKIE_IDENTIFIER . ": " . trim($matches[1]) : null;
-            }
+        $pattern_cookie = "/" . Constants::COOKIE_IDENTIFIER . ": ([^']+)/i";
+        if (preg_match($pattern_cookie, $cURL, $matches)) {
+            $result[Constants::COOKIE_IDENTIFIER] = !empty($matches[1]) ? Constants::COOKIE_IDENTIFIER . ": " . trim($matches[1]) : null;
         }
 
-        if (str_contains($cURL, Constants::USER_AGENT_IDENTIFIER)) {
-            $pattern_agent = "/" . Constants::USER_AGENT_IDENTIFIER . ": ([^']+)/";
-            if (preg_match($pattern_agent, $cURL, $matches)) {
-                $result[Constants::USER_AGENT_IDENTIFIER] = !empty($matches[1]) ? Constants::USER_AGENT_IDENTIFIER . ": " . trim($matches[1]) : null;
-            }
+        $pattern_agent = "/" . Constants::USER_AGENT_IDENTIFIER . ": ([^']+)/i";
+        if (preg_match($pattern_agent, $cURL, $matches)) {
+            $result[Constants::USER_AGENT_IDENTIFIER] = !empty($matches[1]) ? Constants::USER_AGENT_IDENTIFIER . ": " . trim($matches[1]) : null;
         }
 
-        if (str_contains($cURL, Constants::CONTENT_TYPE_IDENTIFIER)) {
-            $pattern_ctype = "/" . Constants::CONTENT_TYPE_IDENTIFIER . ": ([^']+)/";
-            if (preg_match($pattern_ctype, $cURL, $matches)) {
-                $result[Constants::CONTENT_TYPE_IDENTIFIER] = !empty($matches[1]) ? Constants::CONTENT_TYPE_IDENTIFIER . ": " . trim($matches[1]) : null;
-            }
+        $pattern_ctype = "/" . Constants::CONTENT_TYPE_IDENTIFIER . ": ([^']+)/i";
+        if (preg_match($pattern_ctype, $cURL, $matches)) {
+            $result[Constants::CONTENT_TYPE_IDENTIFIER] = !empty($matches[1]) ? Constants::CONTENT_TYPE_IDENTIFIER . ": " . trim($matches[1]) : null;
         }
 
         return $result;

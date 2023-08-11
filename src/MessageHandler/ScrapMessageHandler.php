@@ -32,10 +32,10 @@ class ScrapMessageHandler implements MessageHandlerInterface
         $store_new = !empty($company_details) ? $this->companyService->add_new_company($company_details) : false;
         
         if (!empty($store_new)){
-            echo "Reg Code : " . $registrationCode . " Stored in ID : " . $store_new . ". " . PHP_EOL;
+            echo PHP_EOL . "Reg Code : " . $registrationCode . " Stored in ID : " . $store_new . ". " . PHP_EOL;
         }
         else{
-            echo "Reg Code : " . $registrationCode . " already exists / Provided Cookie Consent not working. Search company list to check if company already exists. "  . PHP_EOL;
+            echo PHP_EOL . "Reg Code : " . $registrationCode . " already exists / Provided Cookie Consent not working. Search company list to check if company already exists. "  . PHP_EOL;
         }
     }
 }
