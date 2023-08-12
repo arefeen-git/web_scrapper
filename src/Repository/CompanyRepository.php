@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Company;
+use App\Service\RedisService;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,10 +19,12 @@ use Doctrine\ORM\EntityManagerInterface;
 class CompanyRepository extends ServiceEntityRepository {
 
     private $entityManager;
+    private RedisService $redisService;
 
-    public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager) {
+    public function __construct(ManagerRegistry $registry, EntityManagerInterface $entityManager, RedisService $redisService,) {
         parent::__construct($registry, Company::class);
         $this->entityManager = $entityManager;
+        $this->redisService = $redisService;
     }
 
     public function checkIfRegistrationCodeExists($registrationCode): array {
@@ -33,7 +36,6 @@ class CompanyRepository extends ServiceEntityRepository {
 
         asort($rc_code_array);
         $tmp_rc_array = array_unique(array_values($rc_code_array)); // Making 'em unique
-        
         // Look if at least one registration code is new.
         $companies = $this->findBy(['deleted' => 0, 'registration_code' => $tmp_rc_array]);
 
@@ -127,7 +129,83 @@ class CompanyRepository extends ServiceEntityRepository {
 
         $query = $queryBuilder->getQuery();
         $companies = $query->getResult();
-        
+
         return $companies;
+    }
+
+    public function add_new($company_details) {
+        // Create a new Company entity and set its properties
+        $company = new Company();
+        $company->setRegistrationCode($company_details['registration_code']);
+        $company->setName($company_details['name']);
+
+        $details = [
+            "vat" => $company_details['vat'],
+            "address" => $company_details['address'],
+            "mobile" => $company_details['mobile']
+        ];
+
+        $company->setDetails($details);
+        $company->setFinances($company_details['finances']);
+        $company->setDeleted(0);
+
+        $this->entityManager->persist($company);
+        $this->entityManager->flush();
+        $this->redisService->deleteAll();
+
+        $company_id = $company->getId();
+
+        return $company_id;
+    }
+    
+    public function edit($company, $formData) {
+        $company->setName($formData['name']);
+
+        $details = $company->getDetails();
+        $details['vat'] = $formData['vat'];
+        $details['address'] = $formData['address'];
+        $company->setDetails($details);
+
+        $currentDateTime = new \DateTimeImmutable();
+        $company->setUpdatedAt($currentDateTime);
+
+        try {
+            $this->entityManager->flush();
+            $this->redisService->deleteAll();
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+    
+    public function softDelete($company, $registration_code) {
+        // Setting temporary registration code, otherwise if someone want to store deleted registration code
+        // an error would be given as the schema declares registration_code as a unique field.
+
+        $dateTime = new \DateTime();
+        $day = $dateTime->format('d');
+        $hour = $dateTime->format('H');
+        $minute = $dateTime->format('i');
+        $second = $dateTime->format('s');
+
+        $tmp_rc = rand(1, 9) . $day . $hour . $minute . $second;
+        $company->setRegistrationCode($tmp_rc);
+
+        // Storing original rc for future reference
+        $details = $company->getDetails();
+        $details['original_registration_code'] = $registration_code;
+        $company->setDetails($details);
+
+        $company->setDeleted(true);
+        $currentDateTime = new \DateTimeImmutable();
+        $company->setDeletedAt($currentDateTime);
+
+        try {
+            $this->entityManager->flush();
+            $this->redisService->deleteAll();
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

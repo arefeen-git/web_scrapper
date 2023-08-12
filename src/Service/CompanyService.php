@@ -8,7 +8,6 @@
 namespace App\Service;
 
 use App\Constants;
-use App\Entity\Company;
 use App\Repository\CompanyRepository;
 use App\Service\RedisService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +36,45 @@ class CompanyService {
         $this->entityManager = $entityManager;
         $this->redisService = $redisService;
         $this->scraperUtility = $scraperUtility;
+    }
+    
+    public function add_new_company($company_details): int {
+
+        // Extra validation just to catch duplicate reg codes which may pass in the interval of multiple consumers/workers.
+        $checker = $this->companyRepository->checkIfRegistrationCodeExists($company_details['registration_code']);
+
+        if (empty($checker)) {
+            return false;
+        }
+
+        $company_id = $this->companyRepository->add_new($company_details);
+
+        return $company_id;
+    }
+
+    public function update(array $formData): bool {
+        $rc_code = $formData['registration_code'];
+        $company = $this->companyRepository->findOneBy(['registration_code' => $rc_code, 'deleted' => 0]);
+
+        if (empty($company)) {
+            return false;
+        }
+
+        $result = $this->companyRepository->edit($company, $formData);
+        
+        return $result;
+    }
+
+    public function delete(int $registration_code): bool {
+        $company = $this->companyRepository->findOneBy(['registration_code' => $registration_code, 'deleted' => 0]);
+
+        if (empty($company)) {
+            return false;
+        }
+
+        $result = $this->companyRepository->softDelete($company, $registration_code);
+        
+        return $result;
     }
 
     public function getCompanyList(int $pageNo = 1): array {
@@ -138,103 +176,6 @@ class CompanyService {
             $responseData['statusCode'] = JsonResponse::HTTP_OK;
 
             return $responseData;
-        }
-    }
-
-    public function add_new_company($company_details): int {
-
-        // Extra validation just to catch duplicate reg codes which may pass in the interval of multiple consumers/workers.
-        $checker = $this->companyRepository->checkIfRegistrationCodeExists($company_details['registration_code']);
-
-        if (empty($checker)) {
-            return false;
-        }
-
-        // Create a new Company entity and set its properties
-        $company = new Company();
-        $company->setRegistrationCode($company_details['registration_code']);
-        $company->setName($company_details['name']);
-
-        $details = [
-            "vat" => $company_details['vat'],
-            "address" => $company_details['address'],
-            "mobile" => $company_details['mobile']
-        ];
-
-        $company->setDetails($details);
-        $company->setFinances($company_details['finances']);
-        $company->setDeleted(0);
-
-        $this->entityManager->persist($company);
-        $this->entityManager->flush();
-        $this->redisService->deleteAll();
-
-        $company_id = $company->getId();
-
-        return $company_id;
-    }
-
-    public function update(array $formData): bool {
-        $rc_code = $formData['registration_code'];
-        $company = $this->companyRepository->findOneBy(['registration_code' => $rc_code, 'deleted' => 0]);
-
-        if (empty($company)) {
-            return false;
-        }
-
-        $company->setName($formData['name']);
-
-        $details = $company->getDetails();
-        $details['vat'] = $formData['vat'];
-        $details['address'] = $formData['address'];
-        $company->setDetails($details);
-
-        $currentDateTime = new \DateTimeImmutable();
-        $company->setUpdatedAt($currentDateTime);
-
-        try {
-            $this->entityManager->flush();
-            $this->redisService->deleteAll();
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
-
-    public function delete(int $registration_code): bool {
-        $company = $this->companyRepository->findOneBy(['registration_code' => $registration_code, 'deleted' => 0]);
-
-        if (empty($company)) {
-            return false;
-        }
-
-        // Setting temporary registration code, otherwise if someone want to store deleted registration code
-        // an error would be given as the schema declares registration_code as a unique field.
-
-        $dateTime = new \DateTime();
-        $day = $dateTime->format('d');
-        $hour = $dateTime->format('H');
-        $minute = $dateTime->format('i');
-        $second = $dateTime->format('s');
-
-        $tmp_rc = rand(1, 9) . $day . $hour . $minute . $second;
-        $company->setRegistrationCode($tmp_rc);
-
-        // Storing original rc for future reference
-        $details = $company->getDetails();
-        $details['original_registration_code'] = $registration_code;
-        $company->setDetails($details);
-
-        $company->setDeleted(true);
-        $currentDateTime = new \DateTimeImmutable();
-        $company->setDeletedAt($currentDateTime);
-
-        try {
-            $this->entityManager->flush();
-            $this->redisService->deleteAll();
-            return true;
-        } catch (\Exception $e) {
-            return false;
         }
     }
 }
