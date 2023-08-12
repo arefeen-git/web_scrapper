@@ -133,7 +133,7 @@
                 </tbody>
             </table>
         </div>
-
+        
         {% if pagination is not empty %}
             <div class="row">
                 <div class="col-12 d-flex justify-content-center">
@@ -208,7 +208,8 @@
     <script>
 
         $(function () {
-
+            
+            // Searching starts here.
             $('#searchForm').submit(function (event) {
                 // Prevent the form from submitting by default
                 event.preventDefault();
@@ -223,7 +224,8 @@
                     this.submit();
                 }
             });
-
+            
+            // Deletion starts here.
             $("#confirmDeleteBtn").click(function () {
                 let registration_code = $("#delete-company").val();
                 let deleteUrl = $('#del-company-' + registration_code).attr("del-url");

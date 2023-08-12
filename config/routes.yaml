@@ -1,13 +1,3 @@
-home_route:
-    path: /home
-    controller: App\Controller\HomeController::index
-    methods: GET
-
-home_test_route:
-    path: /home/test
-    controller: App\Controller\HomeController::test
-    methods: GET
-    
 app_company:
     path: /company
     controller: App\Controller\CompanyController::index
