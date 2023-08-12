@@ -23,36 +23,29 @@ class ScraperUtility extends AbstractController {
 
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
+        
+        $curl = curl_init();
 
-        // Set request data & headers
-        $data = array(
-            'code' => $registrationCode,
-            'order' => '1',
-            'resetFilter' => '0'
-        );
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => ['code' => $registrationCode, 'order' => '1', 'resetFilter' => '0'],
+            CURLOPT_HTTPHEADER => [
+                $curlData[Constants::COOKIE_IDENTIFIER],
+                $curlData[Constants::USER_AGENT_IDENTIFIER]
+            ],
+        ]);
 
-        $content_type = $curlData[Constants::CONTENT_TYPE_IDENTIFIER];
-        $user_agent = $curlData[Constants::USER_AGENT_IDENTIFIER];
-        $cookie = $curlData[Constants::COOKIE_IDENTIFIER];
+        $html_chunk = curl_exec($curl);
 
-        unset($curlData);
-
-        // Options for stream_context
-        $options = array(
-            'http' => array(
-                'method' => 'POST',
-                'content' => http_build_query($data),
-                'header' => implode("\r\n", array(
-                    'Cache-Control: no-cache',
-                    $content_type,
-                    $user_agent,
-                    $cookie
-                ))
-            )
-        );
-
-        $context = stream_context_create($options);
-        $html_chunk = file_get_contents($url, false, $context);
+        curl_close($curl);
+        
         $html_array = explode(PHP_EOL, $html_chunk);
 
         foreach ($html_array as $key => $val) {
@@ -73,26 +66,58 @@ class ScraperUtility extends AbstractController {
 
         $links = $dom->getElementsByTagName('a');
         $firstLink = $links->item(0);
+        
         $company_profile_url = $firstLink->getAttribute('href');
         $company_turnover_url = $company_profile_url . "turnover";
+        
+        // ---- cURL block to start loading Company profile and extracting company details. ----
+        $curl = curl_init();
 
-        $company_profile_context = stream_context_create(array(
-            'http' => array(
-                'method' => 'GET',
-                'header' => implode("\r\n", array(
-                    'cache-control: max-age=0',
-                    $cookie,
-                    $user_agent
-                ))
-            )
-        ));
-
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $company_profile_url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => [
+                $curlData[Constants::USER_AGENT_IDENTIFIER],
+                $curlData[Constants::COOKIE_IDENTIFIER]
+            ],
+        ]);
+        
         // Extracting Company Details from Company Profile URL
-        $company_profile_html_chunk = file_get_contents($company_profile_url, false, $company_profile_context);
+        $company_profile_html_chunk = curl_exec($curl);
         $company_details = $this->_retrieve_company_details($company_profile_html_chunk);
 
+        curl_close($curl);
+        // ---- END OF : cURL block to start loading Company profile and extracting company details. ----
+
+        // ---- cURL block to start loading Company FINANCES and extracting Finance table. ----
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $company_turnover_url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => [
+                $curlData[Constants::USER_AGENT_IDENTIFIER],
+                $curlData[Constants::COOKIE_IDENTIFIER]
+            ],
+        ]);
+        
         // Extraction 2 : Sending Chris Hemsworth for turnover details ...
-        $company_turnover_html_chunk = file_get_contents($company_turnover_url, false, $company_profile_context);
+        $company_turnover_html_chunk = curl_exec($curl);
+        
+        curl_close($curl);
+        // ---- END OF: cURL block to start loading Company FINANCES and extracting Finance table. ----
 
         if (strpos($company_turnover_html_chunk, Constants::IDENTIFY_COMPANY_TURNOVER) == false) {
             $company_turnover = "Not Available";
