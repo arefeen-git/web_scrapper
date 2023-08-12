@@ -51,7 +51,7 @@ class CompanyController extends AbstractController {
                             'companies' => [],
                             'pagination' => [],
                             'csrf_token' => $csrfToken, // Setting this, just in case the user don't check the url and falls into a loop.
-                            'msg' => 'CSRF Token Mismatch : Multiversal Request Not Allowed!!! Contact Doromammu for Bargain'
+                            'msg' => 'CSRF Token Mismatch.' // Multiversal Request Not Allowed!!! Contact Doromammu for Bargain.
                 ]);
             }
         } else {
@@ -106,7 +106,7 @@ class CompanyController extends AbstractController {
 
         if ($submittedToken !== $csrfToken) {
             $responseData = [
-                'message' => 'CSRF Token Mismatch : Multiversal Request Not Allowed!!! Contact Doromammu for Bargain',
+                'message' => 'CSRF Token Mismatch.' // Multiversal Request Not Allowed!!! Contact Doromammu for Bargain.
             ];
 
             $statusCode = JsonResponse::HTTP_UNAUTHORIZED; // 401
@@ -208,7 +208,7 @@ class CompanyController extends AbstractController {
         if ($submittedToken !== $csrfToken) {
 
             $responseData = [
-                'message' => 'CSRF Token Mismatch : Multiversal Request Not Allowed!!! Contact Doromammu for Bargain.',
+                'message' => 'CSRF Token Mismatch.' // Multiversal Request Not Allowed!!! Contact Doromammu for Bargain.
             ];
 
             $statusCode = JsonResponse::HTTP_UNAUTHORIZED; // 401

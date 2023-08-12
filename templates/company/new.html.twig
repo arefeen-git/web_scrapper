@@ -18,15 +18,41 @@
                 <div class="input-group">
                     <button class="btn btn-info" type="button" id="start_scraping">
                         <svg id="spinner" style="display: none;" xmlns="http://www.w3.org/2000/svg" height="0.875em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"/></svg>
-                        <span id="scrap_text" >Scrap & store</span>
+                        <span id="scrap_text" >
+                            <i class="far fa-save"></i> Scrap & store
+                        </span>
                     </button>
                     <input id="rc-code" name="rc-code" type="text" class="form-control" placeholder="Registration Code : 304565690, 306019423, 300515252" aria-label="Registration Code" aria-describedby="start_scraping">
                 </div>
             </div>
             <div id="rc-code-error" class="text-danger ml-3"></div>
+            
+            <br/>
 
             <div class="text-center">
-                <a class="btn btn-info" href="{{ path('app_company_index', {'pageNo': 1}) }}">Show List</a>
+                <a class="btn btn-info btn-lg" href="{{ path('app_company_index', {'pageNo': 1}) }}">
+                    <i class="fas fa-list-ol fa-sm"></i> Show List
+                </a>
+            </div>
+                    
+            <br/>
+                    
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title text-center"> Why Submit a cURL Request ?</h5>
+                    <p class="card-text text-justify">
+                        Our targeted website, <a href="https://rekvizitai.vz.lt/">rekvizitai.vz.lt</a> uses cloudflare for bots. 
+                        So, to bypass this protection, we need to complete the captacha. The captcha sets a cookie which contains php session id as a validator and
+                        we have to include the cookie with every request as it is needed to complete the whole <b>Scrapping</b> process. 
+                        Also, as we can't determine which browser will be used to submit the request, we need to submit valid <b>User-Agent</b> too. 
+                        Different browsers set Cookie differently. 
+                        So, if the <b>User-Agent</b> and <b>Cookie</b> doesn't match, the request will not work as such requests are blocked by the targeted website.
+                    </p>
+                    <br/>
+                    <p class="card-text text-justify">
+                        How and which cURL request is needed to be <i>copied and pasted</i> here, can be found in the README.md file of this project.
+                    </p>
+                </div>
             </div>
 
             <div class="row">

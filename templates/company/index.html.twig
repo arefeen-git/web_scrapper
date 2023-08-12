@@ -32,7 +32,9 @@
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <button class="btn btn-info" type="submit" id="start_searching">
-                                    <span id="search">Search</span>
+                                    <span id="search">
+                                        <i class="fa fa-search" aria-hidden="true"></i> Search
+                                    </span>
                                 </button>
                             </div>
                             <input id="rc-codes" name="rc-codes" type="text" class="form-control" placeholder="Registration Code : 304565690, 306019423, 300515252" aria-label="Registration Code" aria-describedby="start_searching">
@@ -42,7 +44,9 @@
                 </form>
             </div>
             <div class="col-md-4 text-right">
-                <a class="btn btn-info" href="{{ path('app_company_new') }}">Create new</a>
+                <a class="btn btn-info" href="{{ path('app_company_new') }}">
+                    <i class="fa fa-plus" aria-hidden="true"></i> Create new
+                </a>
             </div>
         </div>
 
