@@ -54,46 +54,18 @@ class CompanyService {
             $companies = json_decode($redis_value);
             $pagination = json_decode($redis_pagination_value);
         } else {
-
-            $queryBuilder = $this->entityManager->createQueryBuilder();
-            $queryBuilder
-                    ->select('c.name', 'c.registration_code', 'c.details', 'c.finances')
-                    ->from('App\Entity\Company', 'c')
-                    ->where('c.deleted = :deleted')
-                    ->setParameter('deleted', 0)
-                    ->orderBy('c.id', 'ASC')
-                    ->setFirstResult($offset)
-                    ->setMaxResults($responseLimiter);
-
-            $query = $queryBuilder->getQuery();
-            $companies = $query->getResult();
-
+            
+            // Company Records
+            $companies = $this->companyRepository->getCompanies($offset, $responseLimiter);
             $redis_value = json_encode($companies);
-
             $this->redisService->setValueInRedis($redis_key, $redis_value);
-
-            // *** Pagination Calculation Starts Here. ***
-            // Count total number of companies
-            $totalCount = $this->entityManager
-                    ->createQueryBuilder()
-                    ->select('COUNT(c.id)')
-                    ->from('App\Entity\Company', 'c')
-                    ->where('c.deleted = :deleted')
-                    ->setParameter('deleted', 0)
-                    ->getQuery()
-                    ->getSingleScalarResult();
-
-            // Calculate previous, next, and after next page numbers
-            $pagination = [];
-            $pagination['currentPage'] = $pageNo;
-            $pagination['previousPage'] = (int) max(1, $pageNo - 1);
-            $pagination['nextPage'] = (int) min(ceil($totalCount / $responseLimiter), $pageNo + 1);
-            $pagination['afterNextPage'] = (int) min(ceil($totalCount / $responseLimiter), $pagination['nextPage'] + 1);
-            $pagination['totalCount'] = (int) $totalCount;
-            $pagination['totalPages'] = (int) ceil($totalCount / $responseLimiter);
-
+            
+            /*
+             * Used getPagination() instead of numberOfCompanies() to mainly isolate the Pagination functionalities.
+             * Also, in a large DB, doctrine queryBuilder will give better performance over findBy().
+             */
+            $pagination = $this->companyRepository->getPagination($pageNo, $responseLimiter);
             $redis_pagination_value = json_encode($pagination);
-
             $this->redisService->setValueInRedis($redis_pagination_key, $redis_pagination_value);
         }
 
@@ -111,37 +83,8 @@ class CompanyService {
     }
 
     public function searchByRegistrationCode(string $rc_codes): array {
-
-        $rc_code_array = !empty($rc_codes) ? explode(",", $rc_codes) : [];
-
-        foreach ($rc_code_array as $key => &$val) {
-            $val = (int) trim($val);
-        }
-
-        $queryBuilder = $this->entityManager->createQueryBuilder();
-
-        if (empty($rc_code_array)) {
-            $queryBuilder
-                    ->select('c.name', 'c.registration_code', 'c.details', 'c.finances')
-                    ->from('App\Entity\Company', 'c')
-                    ->where('c.deleted = :deleted')
-                    ->setParameter('deleted', 0)
-                    ->setMaxResults(Constants::RESPONSE_LIMITER);
-        } else {
-            $queryBuilder
-                    ->select('c.name', 'c.registration_code', 'c.details', 'c.finances')
-                    ->from('App\Entity\Company', 'c')
-                    ->where('c.deleted = :deleted')
-                    ->setParameter('deleted', 0);
-
-            if (!empty($rc_codes)) {
-                $queryBuilder
-                        ->andWhere($queryBuilder->expr()->in('c.registration_code', $rc_code_array));
-            }
-        }
-
-        $query = $queryBuilder->getQuery();
-        $companies = $query->getResult();
+        
+        $companies = $this->companyRepository->searchByRegCodes($rc_codes);
 
         return $companies;
     }
@@ -155,7 +98,7 @@ class CompanyService {
             $responseData = [
                 'message' => 'Provided Registration Code(s) Already Exists',
             ];
-
+            
             $responseData['statusCode'] = JsonResponse::HTTP_BAD_REQUEST;
 
             return $responseData;
@@ -183,8 +126,15 @@ class CompanyService {
                 $message = new ScrapMessage($rc_code, $formatted_cURL_data);
                 $this->messageBusInterface->dispatch($message);
             }
-
-            $responseData['message'] = ' Scraping Started for ' . implode(', ', $rc_codes);
+            
+            $responseData['message'] = ' Scraping Started for ' . implode(', ', $rc_codes) . " .";
+            
+            if (!empty($filtered_rc_codes['old'])){
+                
+                $msg_string = count($filtered_rc_codes['old']) > 1 ? "these values " : "this value ";
+                $responseData['message'] .= PHP_EOL . "But, " . $msg_string . implode(', ', $filtered_rc_codes['old']) . " already exist.";
+            }
+            
             $responseData['statusCode'] = JsonResponse::HTTP_OK;
 
             return $responseData;
