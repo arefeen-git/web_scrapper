@@ -162,7 +162,6 @@ Access the project at [http://localhost:8080/company/new](http://localhost:8080/
        If you're using a Windows system, choose the option that states "Copy as cURL (bash)." 
        On my Linux (Ubuntu 22.04) with Chrome (Version 114.0.5735.198), the cURL request looks something like this:
 
-        ```bash
         curl 'https://rekvizitai.vz.lt/imoniu-paieska/1/' \
           -H 'authority: rekvizitai.vz.lt' \
           -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
@@ -174,7 +173,6 @@ Access the project at [http://localhost:8080/company/new](http://localhost:8080/
           ........
           ........
           --compressed
-        ```
 
     6. Paste the copied cURL request value into the cURL Request section of the scrapper at [http://localhost:8080/company/new](http://localhost:8080/company/new).
 
