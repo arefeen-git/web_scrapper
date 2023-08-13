@@ -8,7 +8,8 @@
 [![rabbitmq](https://img.shields.io/badge/rabbitmq-latest-brightgreen.svg)](https://www.rabbitmq.com/)
 [![docker](https://img.shields.io/badge/docker-latest-blue.svg)](https://www.docker.com/)
 
-> A web scraping project for learning purposes.
+> A web scraping project for learning purposes. This project uses Symfony as the framework. Mysql as the database. Redis is used to cache, retrieved data.
+> Here Rabbitmq is used to process async requests (Tasks that require too long to process, listed and executed as async with symfony messenger).
 
 ## Disclaimer: [web_scrapper]
 
