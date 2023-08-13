@@ -177,7 +177,7 @@ Access the project at [http://localhost:8080/company/new](http://localhost:8080/
 
     8. Click the "Scrap and store" button.
 
-    9. <b> *** IMPORANT *** : </b> Please keep in mind that the Cookie provided with the cURL expires in about 20-25 minutes. 
+    9. *** IMPORANT *** : Please keep in mind that the Cookie provided with the cURL expires in about 20-25 minutes. 
        So after that, please copy and paste the cURL url again in the same manner.
 
 12. **Company List:**
