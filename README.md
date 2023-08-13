@@ -95,7 +95,7 @@ In the `docker-compose.yml` file, review the `volumes` section of the `mysql-ser
 
 6. **Build and Run:**
 
-Run this command in your project directory:
+Please make sure Docker and dcoker-compose is up and runnign in your host machnine. Run this command in your project directory:
 
         docker-compose up --build -d
 
@@ -176,6 +176,9 @@ Access the project at [http://localhost:8080/company/new](http://localhost:8080/
     7. From the search page, select any company, copy the registration field, and paste it into the registration code field. You can submit multiple registration codes as comma-separated values.
 
     8. Click the "Scrap and store" button.
+
+    9. <b> *** IMPORANT *** : </b> Please keep in mind that the Cookie provided with the cURL expires in about 20-25 minutes. 
+       So after that, please copy and paste the cURL url again in the same manner.
 
 12. **Company List:**
 
