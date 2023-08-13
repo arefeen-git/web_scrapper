@@ -77,6 +77,13 @@ class CompanyService {
         return $result;
     }
 
+    /**
+    * Retrieves a list of companies with pagination information.
+    * 
+    * @param int $pageNo The page number for pagination.
+    *
+    * @return array Returns an array containing companies and pagination information.
+    */
     public function getCompanyList(int $pageNo = 1): array {
 
         $responseLimiter = Constants::RESPONSE_LIMITER;
@@ -127,6 +134,14 @@ class CompanyService {
         return $companies;
     }
 
+    /**
+    * Handles scraping service for provided registration codes and cURL request.
+    * 
+    * @param string $registration_code The comma-separated registration codes.
+    * @param string $cURL The cURL request.
+    *
+    * @return array Returns an array containing the scraping result and status code.
+    */
     public function scraper_service($registration_code, $cURL) {
 
         $filtered_rc_codes = $this->companyRepository->checkIfRegistrationCodeExists($registration_code);

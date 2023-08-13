@@ -27,6 +27,13 @@ class CompanyRepository extends ServiceEntityRepository {
         $this->redisService = $redisService;
     }
 
+    /**
+    * Checks if provided registration codes exist in the database.
+    * 
+    * @param string $registrationCode The comma-separated registration codes.
+    *
+    * @return array Returns an empty array if not a single new reg codes / containing new and old registration codes.
+    */
     public function checkIfRegistrationCodeExists($registrationCode): array {
         $rc_code_array = !empty($registrationCode) ? explode(",", $registrationCode) : [];
 
@@ -98,6 +105,13 @@ class CompanyRepository extends ServiceEntityRepository {
         return $pagination;
     }
 
+    /**
+    * Searches for companies based on provided registration codes.
+    * 
+    * @param string $rc_codes The comma-separated registration codes.
+    *
+    * @return array Returns an array containing the retrieved companies.
+    */
     public function searchByRegCodes($rc_codes) {
         $rc_code_array = !empty($rc_codes) ? explode(",", $rc_codes) : [];
 
@@ -178,6 +192,14 @@ class CompanyRepository extends ServiceEntityRepository {
         }
     }
     
+    /**
+    * Performs a soft delete on a company.
+    * 
+    * @param Company $company The company entity to soft delete.
+    * @param string $registration_code The original registration code for future reference.
+    *
+    * @return bool Returns true if the soft delete was successful, false otherwise.
+    */
     public function softDelete($company, $registration_code) {
         // Setting temporary registration code, otherwise if someone want to store deleted registration code
         // an error would be given as the schema declares registration_code as a unique field.

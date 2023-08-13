@@ -32,6 +32,15 @@ class CompanyController extends AbstractController {
         $this->tokenGenerator = $tokenGenerator;
     }
 
+    /**
+    * This method returns a list of companies obtained through a search operation.
+    *
+    * @param Request $request The incoming request object.
+    *
+    * @return Response Returns a rendered Twig file containing company data, pagination, CSRF token, and messages.
+    *
+    * @throws InvalidArgumentException If the CSRF token validation fails.
+    */
     #[Route('/company/list/{pageNo<\d+>?}', name: 'app_company_index', methods: ['GET', 'POST'])]
     public function index(Request $request): Response {
 
@@ -98,6 +107,13 @@ class CompanyController extends AbstractController {
         ]);
     }
 
+    /**
+    * This method handles the scraping of new companies using provided registration codes and a cURL request.
+    * 
+    * @param Request $request The incoming request object containing registration codes and cURL request.
+    *
+    * @return JsonResponse Returns a JSON response with the result of the scraping operation.
+    */
     #[Route('/scrap', name: 'app_company_scrap', methods: ['POST'])]
     public function scrap(Request $request): JsonResponse {
 
@@ -106,7 +122,7 @@ class CompanyController extends AbstractController {
 
         if ($submittedToken !== $csrfToken) {
             $responseData = [
-                'message' => 'CSRF Token Mismatch.' // Multiversal Request Not Allowed!!! Contact Doromammu for Bargain.
+                'message' => 'CSRF Token Mismatch.'
             ];
 
             $statusCode = JsonResponse::HTTP_UNAUTHORIZED; // 401
@@ -122,6 +138,13 @@ class CompanyController extends AbstractController {
         }
     }
 
+    /**
+    * This method handles the rendering of the new company submission form.
+    * 
+    * @param Request $request The incoming request object.
+    *
+    * @return Response Returns a response containing the rendered form with CSRF token.
+    */
     #[Route('/new', name: 'app_company_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response {
         
@@ -139,6 +162,13 @@ class CompanyController extends AbstractController {
         ]);
     }
 
+    /**
+    * This method handles the editing of a company's information.
+    * 
+    * @param Request $request The incoming request object.
+    *
+    * @return Response Returns a rendered Twig file containing company data, CSRF token, and messages.
+    */
     #[Route('/edit/{registration_code}', name: 'app_company_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request): Response {
         $rcCode = $request->attributes->get('registration_code');
@@ -148,7 +178,7 @@ class CompanyController extends AbstractController {
             $submittedToken = $request->request->get('csrf_token');
             $csrfToken = $request->getSession()->get('company_item_csrf_token');
 
-            // Match token.
+            // Match the CSRF tokens
             if ($submittedToken == $csrfToken) {
                 $formData = $request->request->all();
 
@@ -156,6 +186,7 @@ class CompanyController extends AbstractController {
 
                 $formData['registration_code'] = $rcCode;
 
+                // Update company information
                 if ($this->companyService->update($formData)) {
                     $request->getSession()->set('msg', 'Successfully Updated.');
                     return $this->redirectToRoute('app_company_index', ['pageNo' => 1]);
@@ -200,6 +231,13 @@ class CompanyController extends AbstractController {
         ]);
     }
 
+    /**
+    * This method handles the deletion (soft) of a company.
+    * 
+    * @param Request $request The incoming request object.
+    *
+    * @return JsonResponse Returns a JSON response containing the deletion status message.
+    */
     #[Route('/delete/{registration_code}', name: 'app_company_delete', methods: ['POST'])]
     public function delete(Request $request): JsonResponse {
         $submittedToken = $request->request->get('csrf_token');
@@ -208,7 +246,7 @@ class CompanyController extends AbstractController {
         if ($submittedToken !== $csrfToken) {
 
             $responseData = [
-                'message' => 'CSRF Token Mismatch.' // Multiversal Request Not Allowed!!! Contact Doromammu for Bargain.
+                'message' => 'CSRF Token Mismatch.'
             ];
 
             $statusCode = JsonResponse::HTTP_UNAUTHORIZED; // 401

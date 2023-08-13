@@ -113,7 +113,7 @@ class ScraperUtility extends AbstractController {
             ],
         ]);
         
-        // Extraction 2 : Sending Chris Hemsworth for turnover details ...
+        // Extraction 2 : Going for turnover details ...
         $company_turnover_html_chunk = curl_exec($curl);
         
         curl_close($curl);
@@ -130,6 +130,13 @@ class ScraperUtility extends AbstractController {
         return $company_details;
     }
 
+    /**
+    * Extracts and retrieves various company details from the cURL request.
+    *
+    * @param string $details The HTML snippet containing the whole company page.
+    *
+    * @return array An associative array containing extracted company details.
+    */
     private function _retrieve_company_details($details): array {
         $company_profile_html_array = explode(PHP_EOL, $details);
         $dom = new DOMDocument();
@@ -155,6 +162,9 @@ class ScraperUtility extends AbstractController {
              */
 
             $dom->loadHTML($company_profile_html_array[$info_index]);
+            
+            // The IDENTIFY_COMPANY_DETAILS -> NODE_TO_TRAVEL property actually tells the scrapper 
+            // where to look for the actual data from the IDENTIFYING_NODE
 
             if ($info == Constants::NAME && ($company_details[strtolower($info)] !== Constants::MESSAGE_NA)) {
                 $info_element = $dom->getElementsByTagName($props['IDENTIFYING_NODE']);
@@ -197,6 +207,12 @@ class ScraperUtility extends AbstractController {
         return $company_details;
     }
 
+    /**
+    * Retrieves company turnover details from HTML snippet.
+    *
+    * @param string $turnover_details HTML snippet containing company turnover information
+    * @return string Extracted company turnover details as HTML table
+    */
     private function _retrieve_company_turnover($turnover_details): string {
         $company_turnover_html_array = explode(PHP_EOL, $turnover_details);
         $dom = new DOMDocument();
@@ -232,7 +248,13 @@ class ScraperUtility extends AbstractController {
 
         return $company_turnover_details;
     }
-
+    
+    /**
+    * Prepares an array from a table contained in an HTML snippet.
+    *
+    * @param array $turnover_table_array Array containing lines of finances HTML table
+    * @return string Prepared HTML table content with necessary modifications
+    */
     private function _prepare_array_from_table($turnover_table_array) {
         $non_table_identifiers = ['<div ', '</div>', '<rect ', '<path ', '<svg ', '</svg>', '<span ', '</span>'];
 
@@ -276,6 +298,12 @@ class ScraperUtility extends AbstractController {
         return trim($result);
     }
 
+    /**
+    * Processes cURL string to extract specific headers.
+    *
+    * @param string $cURL cURL string containing headers
+    * @return array Extracted headers as an associative array
+    */
     public function processCurl($cURL) {
         $result = [];
         $matches = [];

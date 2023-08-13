@@ -12,8 +12,7 @@ services:
         
     Predis\Client:
         arguments:
-#            - "tcp://redis-container:6379" # Update with your Redis server address and port
-            - "tcp://localhost:6379" # Update with your Redis server address and port
+            - "tcp://redis-container:6379" # Update with your Redis server address and port
     
     # default configuration for services in *this* file
     _defaults:
