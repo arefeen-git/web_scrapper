@@ -1,90 +1,179 @@
 # web_scrapper
 
-1. Checkout the project.
+[![nginx](https://img.shields.io/badge/nginx-latest-brightgreen.svg)](https://nginx.org/)
+[![php](https://img.shields.io/badge/php-latest-blue.svg)](https://www.php.net/)
+[![symfony](https://img.shields.io/badge/symfony-latest-red.svg)](https://symfony.com/)
+[![mysql](https://img.shields.io/badge/mysql-latest-orange.svg)](https://www.mysql.com/)
+[![redis](https://img.shields.io/badge/redis-latest-red.svg)](https://redis.io/)
+[![rabbitmq](https://img.shields.io/badge/rabbitmq-latest-brightgreen.svg)](https://www.rabbitmq.com/)
+[![docker](https://img.shields.io/badge/docker-latest-blue.svg)](https://www.docker.com/)
 
-2. Check available ports (I am on ubuntu 22.04, please modify the command according to your os) - 
+> A web scraping project for learning purposes.
 
+## Disclaimer: [web_scrapper]
+
+This disclaimer outlines the terms and conditions governing the use of **[web_scrapper]**, hereinafter referred to as "the Software." By accessing and utilizing the Software, you agree to comply with the following terms:
+
+### Non-Commercial Use
+
+The Software is intended solely for non-commercial purposes. You may not use, distribute, or profit from the Software in any commercial manner, including but not limited to resale, licensing, or monetization.
+
+### Ethical Use and Data Mining
+
+The Software is not designed, intended, or authorized for unethical data mining practices. You are strictly prohibited from engaging in any activities that involve unauthorized data collection, privacy infringements, or any actions that violate ethical data usage principles.
+
+### EU Data Policy Compliance
+
+The Software is developed in accordance with the rules and regulations set forth by the European Union's data protection policies, including but not limited to the General Data Protection Regulation (GDPR). However, it is essential to note that compliance with these policies is not a substitute for legal advice. Users are responsible for ensuring their activities align with applicable laws and regulations.
+
+### Educational Purpose
+
+The primary purpose of the Software is for educational and learning purposes. It is meant to facilitate exploration, experimentation, and skill development in various fields. The Software is not intended to replace professional advice, tools, or solutions.
+
+### No Warranties or Guarantees
+
+The Software is provided "as is," without any warranties, express or implied. The developers of the Software disclaim any liability, whether in contract, tort, or otherwise, arising from the use of the Software. Users assume full responsibility and risk for their use of the Software.
+
+### Limitation of Liability
+
+Under no circumstances shall the developer of the Software be liable for any direct, indirect, incidental, special, consequential, or punitive damages that result from the use or inability to use the Software, even if they have been advised of the possibility of such damages.
+
+### Modification and Redistribution
+
+You are permitted to modify the Software for personal use, learning, and experimentation. However, modified versions of the Software may not be redistributed without the explicit consent of the developer.
+
+### Acceptance of Terms
+
+By accessing or using the Software, you acknowledge that you have read, understood, and agree to abide by the terms and conditions outlined in this disclaimer.
+
+The developer of **[web_scrapper]** reserves the right to update or modify this disclaimer at any time without prior notice. It is your responsibility to review this disclaimer periodically and remain aware of any changes.
+
+If you do not agree with any part of this disclaimer or its terms, please refrain from using the Software.
+
+Last updated: [13-08-2023]
+
+For inquiries or concerns regarding this disclaimer, please contact [samsull.arefeen@gmail.com].
+
+**[web_scrapper]** Md. Samsull Arefeen
+
+
+## Setup Guide :
+
+Follow these steps to set up and run the project:
+
+1. **Checkout the Project:**
+
+2. **Check Available Ports:**
+
+   Run these commands to check available ports on your system:
+   
         sudo lsof -i :80
-        
         sudo lsof -i :8080
-        
         sudo lsof -i :9000
-        
         sudo lsof -i :3306
-        
         sudo lsof -i :6379
-        
         sudo lsof -i :5672
-        
         sudo lsof -i :15672
 
-3. Please create a .env file with appropriate credentials, follow .env.test.
+3. **Create .env File:**
 
-4. Please replace **my_project_directory** with the directory name you cloned this project to in below files -
+Create a `.env` file with appropriate credentials, following the example in `.env.test`.
 
-   <code>docker-compose.yml - line 15 & 32
-   Dockerfile - line 13
-   default.conf - line 6</code>
+4. **Update Directory Names:**
 
-   For example, if the line is somwthing like this - **/var/www/html/my_project_directory/public** change that to this - 
-   **/var/www/html/web_scrapper/public** where web_scrapper is the current working directory.
+Update the following files to match your project directory name:
 
-5. Please check the volumes section of the mysql-service in docker-compose.yml file. You can create **/var/www/html/docker-mysql-data**
-   directory for storing your mysql data or can replace it with **/var/lib/mysql**. But remeber, if you have mysql installed on your host machine,
-   replacing **/var/www/html/docker-mysql-data** with **/var/lib/mysql** might corrupt you data.
+- `docker-compose.yml` - lines 15 & 32
+- `Dockerfile` - line 13
+- `default.conf` - line 6
 
-6. Switch to project directory and run -
+For instance, replace `/var/www/html/my_project_directory/public` with `/var/www/html/web_scrapper/public` if your working directory is `web_scrapper`.
+
+5. **MySQL Volume:** 
+
+In the `docker-compose.yml` file, review the `volumes` section of the `mysql-service`. You can create a directory named "docker-mysql-data" at location "/var/www/html" `/var/www/html/docker-mysql-data` for MySQL data storage or replace it with `/var/lib/mysql`. Note that replacing with `/var/lib/mysql` might impact data if you have already MySQL installed on your host machine.
+
+6. **Build and Run:**
+
+Run this command in your project directory:
 
         docker-compose up --build -d
 
-7. After successful build, run -
 
+7. **Install Dependencies:**
+
+Inside the PHP container, install Composer dependencies. First run to get inside the container -
+        
         docker exec -it php-container bash
 
-8. Inside the php-container of docker, install all composer dependencies. So run -
-
+Then run this to install composer dependencies -
+        
         composer install
 
-9. Now you need to Create the Database
+8. **Database Setup:**
+
+Create the database:
 
         php bin/console doctrine:database:create
 
-   and then run the migration script -
+
+Run the migration script:
 
         php bin/console doctrine:migrations:migrate
 
-10. Now run below command to start the project -
+
+9. **Start the Project:**
+
+Start the project:
 
         symfony serve
-   
-   The project should be accessible from <a href="http://localhost:8080/company/new" target="_blank">http://localhost:8080/company/new</a>,
-   If you haven't changed **default.conf** under nginx folder.
-
-11. Open a new terminal tab with same directory and get inside the php container with **docker exec -it php-container bash** and then run -
-
-        php bin/console messenger:consume async --memory-limit=128M
-
-    The more step 9 you repeat (The more consumer you create), your multiple company scrapping will get inserted faster
 
 
-12. Go to <a href="https://rekvizitai.vz.lt/en/company-search/" target="_blank">https://rekvizitai.vz.lt/en/company-search/</a>,
-    complete the cloudflare captcha and then select any category and hit the search bar.
+Access the project at [http://localhost:8080/company/new](http://localhost:8080/company/new ), if the default configuration is unchanged.
 
+10. **Run the Consumer:**
 
-13. From the result page open the browser inspector tool and go to the Network -> Doc tab. 
-    Reload the page, click the 1/ or 2/ (pagenumber) url that's being loaded. 
-    Browse a bit below (Header section, and below you can find Request Headers) to copy Cookie value (cookie consent).
-    The value will look like this -
+ In a new terminal tab, run:
 
-    
-    <code>CookieScriptConsent=%7B%22googleconsentmap%22%3A%7B%22ad_storage%22%3A%22targeting%22%2C%22analytics_storage%22%3A%22performance%22%2C%22functionality_storage%22%3A%22functionality%22%2C%22personalization_storage%22%3A%22functionality%22%2C%22security_storage%22%3A%22functionality%22%7D%2C%22action%22%3A%22accept%22%2C%22categories%22%3A%22%5B%5C%22unclassified%5C%22%2C%5C%22targeting%5C%22%5D%22%2C%22key%22%3A%223e8df365-6f2c-4c1a-80ad-d5c902d78b97%22%7D; VzLtLoginHash=RSU55dhwSq7ZcV3f9w; PHPSESSID=fa77hp3a3m9510ge9v15p256mn; _gid=GA1.2.1146864184.1691324377; _gat_UA-724652-3=1; cf_clearance=X9zki5ZFbDCFoK4FdT1q1gkl2odGdYGgx69Pg4kjAAs-1691336228-0-1-dd86ce74.8b164603.8a879194-250.2.1691336228; _ga_D931ERQW91=GS1.1.1691332400.86.1.1691336228.0.0.0; _ga=GA1.1.1096950485.1688928483</code>
+ ```
+ docker exec -it php-container bash
+ php bin/console messenger:consume async --memory-limit=128M
+ ```
+ The more consumer you open/run the more faster mutiple registration code will be scrapped and stored. 
 
+11. **Web Scraping Steps:**
 
-14. Paste the value in Cookie-consent section of the scrapper <a href="http://localhost:8080/company/new" target="_blank">http://localhost:8080/company/new</a>.
+ To extract company information from [https://rekvizitai.vz.lt/](https://rekvizitai.vz.lt/), follow these steps:
 
-15. Select any company from the search page and copy the registration field and paste it in the registration code filed.
-    You can submit mutiple registration code as comma seperated values.
+    1. Visit the website and complete the Cloudflare captcha. Then, select "Company Search" from the top menu.
 
-17. Hit the Scrap and store button.
+    2. On the Company Search page, open your browser's "Inspect" tool and navigate to the Network Tab. Choose "Doc" under the Network Tab.
 
-18. Click the Show List button to view the companies. 
+    3. Use the registration code 304565690 (Nordstreet) or any other valid registration code to search for a company.
+
+    4. Upon hitting the search button, you'll notice a Network activity (POST request) in the Network/Doc tab.
+
+    5. Right-click on the activity/request and select "Copy value" → "Copy as cURL." If you're using a Windows system, choose the option that states "Copy as cURL (bash)." On my Linux (Ubuntu 22.04) with Chrome (Version 114.0.5735.198), the cURL request looks something like this:
+
+        ```bash
+        curl 'https://rekvizitai.vz.lt/imoniu-paieska/1/' \
+          -H 'authority: rekvizitai.vz.lt' \
+          -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+          -H 'accept-language: en-US,en;q=0.9' \
+          -H 'cache-control: max-age=0' \
+          -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundarya4POYcaCUtUW2rIj' \
+          -H 'cookie: _gid=GA1.    ........
+          --compressed
+        ```
+
+    6. Paste the copied cURL request value into the cURL Request section of the scrapper at [http://localhost:8080/company/new](http://localhost:8080/company/new).
+
+    7. From the search page, select any company, copy the registration field, and paste it into the registration code field. You can submit multiple registration codes as comma-separated values.
+
+    8. Click the "Scrap and store" button.
+
+12. **Company List:**
+
+ After scraping, view the list of companies. You can edit and delete (soft) entries as needed.
+
+If you encounter any issues or need assistance, contact me at [samsull.arefeen@gmail.com].
