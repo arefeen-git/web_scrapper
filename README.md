@@ -158,7 +158,9 @@ Access the project at [http://localhost:8080/company/new](http://localhost:8080/
 
     4. Upon hitting the search button, you'll notice a Network activity (POST request) in the Network/Doc tab.
 
-    5. Right-click on the activity/request and select "Copy value" → "Copy as cURL." If you're using a Windows system, choose the option that states "Copy as cURL (bash)." On my Linux (Ubuntu 22.04) with Chrome (Version 114.0.5735.198), the cURL request looks something like this:
+    5. Right-click on the activity/request and select "Copy value" → "Copy as cURL." 
+       If you're using a Windows system, choose the option that states "Copy as cURL (bash)." 
+       On my Linux (Ubuntu 22.04) with Chrome (Version 114.0.5735.198), the cURL request looks something like this:
 
         ```bash
         curl 'https://rekvizitai.vz.lt/imoniu-paieska/1/' \
@@ -167,13 +169,17 @@ Access the project at [http://localhost:8080/company/new](http://localhost:8080/
           -H 'accept-language: en-US,en;q=0.9' \
           -H 'cache-control: max-age=0' \
           -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundarya4POYcaCUtUW2rIj' \
-          -H 'cookie: _gid=GA1.    ........
+          -H 'cookie: _gid=GA1.    
+          ........
+          ........
+          ........
           --compressed
         ```
 
     6. Paste the copied cURL request value into the cURL Request section of the scrapper at [http://localhost:8080/company/new](http://localhost:8080/company/new).
 
-    7. From the search page, select any company, copy the registration field, and paste it into the registration code field. You can submit multiple registration codes as comma-separated values.
+    7. From the search page, select any company, copy the registration field, and paste it into the registration code field. 
+       You can submit multiple registration codes as comma-separated values.
 
     8. Click the "Scrap and store" button.
 
