@@ -137,6 +137,11 @@ Access the project at [http://localhost:8080/company/new](http://localhost:8080/
 
  ```
  docker exec -it php-container bash
+ ```
+
+ & after getting inside the terminal run -
+
+ ```
  php bin/console messenger:consume async --memory-limit=128M
  ```
  The more consumer you open/run the more faster mutiple registration code will be scrapped and stored. 
