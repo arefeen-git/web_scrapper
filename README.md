@@ -151,39 +151,10 @@ Access the project at [http://localhost:8080/company/new](http://localhost:8080/
 
  To extract company information from [https://rekvizitai.vz.lt/](https://rekvizitai.vz.lt/), follow these steps:
 
-    1. Visit the website and complete the Cloudflare captcha. Then, select "Company Search" from the top menu.
+    1. In the registration code input field enter registration codes such as 300651537, 300940673, 302943102, 303116155.
+       You can put them one by one like 300651537 or many by comma separated value 300651537, 300940673, 302943102, 303116155, ...
 
-    2. On the Company Search page, open your browser's "Inspect" tool and navigate to the Network Tab. Choose "Doc" under the Network Tab.
-
-    3. Use the registration code 304565690 (Nordstreet) or any other valid registration code to search for a company.
-
-    4. Upon hitting the search button, you'll notice a Network activity (POST request) in the Network/Doc tab.
-
-    5. Right-click on the activity/request and select "Copy value" → "Copy as cURL." 
-       If you're using a Windows system, choose the option that states "Copy as cURL (bash)." 
-       On my Linux (Ubuntu 22.04) with Chrome (Version 114.0.5735.198), the cURL request looks something like this:
-
-        curl 'https://rekvizitai.vz.lt/imoniu-paieska/1/' \
-          -H 'authority: rekvizitai.vz.lt' \
-          -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
-          -H 'accept-language: en-US,en;q=0.9' \
-          -H 'cache-control: max-age=0' \
-          -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundarya4POYcaCUtUW2rIj' \
-          -H 'cookie: _gid=GA1.    
-          ........
-          ........
-          ........
-          --compressed
-
-    6. Paste the copied cURL request value into the cURL Request section of the scrapper at [http://localhost:8080/company/new](http://localhost:8080/company/new).
-
-    7. From the search page, select any company, copy the registration field, and paste it into the registration code field. 
-       You can submit multiple registration codes as comma-separated values.
-
-    8. Click the "Scrap and store" button.
-
-    9. *** IMPORANT *** : Please keep in mind that the Cookie provided with the cURL expires in about 20-25 minutes. 
-       So after that, please copy and paste the cURL url again in the same manner.
+    2. Click the "Scrap and store" button.
 
 12. **Company List:**
 
