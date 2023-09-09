@@ -26,6 +26,8 @@ class ScrapMessageHandler implements MessageHandlerInterface
     public function __invoke(ScrapMessage $message)
     {
         $registrationCode = $message->getRegistrationCode();
+        
+        echo PHP_EOL . "Scrapping started for Reg Code : " . $registrationCode . PHP_EOL;
 
         $company_details = $this->scraperUtility->start_scraping($registrationCode);
         $store_new = !empty($company_details) ? $this->companyService->add_new_company($company_details) : false;
