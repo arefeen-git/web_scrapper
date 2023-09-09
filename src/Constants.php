@@ -9,13 +9,9 @@ namespace App;
 
 class Constants {
     
-    public const SCRAP_FROM = 'https://rekvizitai.vz.lt/';
-    
-    public const REPLCAING_TEXT = "PUT_YOUR_REGISTRATION_CODE_HERE";
-    
-    public const USER_AGENT_IDENTIFIER = "user-agent";
-    public const CONTENT_TYPE_IDENTIFIER = "content-type";
-    public const COOKIE_IDENTIFIER = "cookie";
+    public const SCRAP_FROM     = 'https://rekvizitai.vz.lt/';
+    public const SCRAPDO_URL    = "https://api.scrape.do?";
+    public const SCRAPDO_TOKEN  = "2b5c016e99bd4a7eab63526aeb5abca88d310a99879";
 
     public const ADDRESS    = 'ADDRESS';
     public const MOBILE     = 'MOBILE';

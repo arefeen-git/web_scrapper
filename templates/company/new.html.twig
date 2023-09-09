@@ -8,13 +8,6 @@
         <div id="submission_form" class="m-2 p-2">
             <input type="hidden" id="csrf_token" name="_csrf_token" value="{{ csrf_token }}" />
             <div class="form-group m-3">
-                <label for="cookie-consent" class="input-group-text">cURL Request</label>
-                <div class="input-group">
-                    <textarea id="cookie-consent" name="cookie-consent" class="form-control" style="height: 250px; resize: none;" aria-label="With textarea"></textarea>
-                </div>
-            </div>
-            <div id="cookie-error" class="text-danger ml-3"></div>
-            <div class="form-group m-3">
                 <div class="input-group">
                     <button class="btn btn-info" type="button" id="start_scraping">
                         <svg id="spinner" style="display: none;" xmlns="http://www.w3.org/2000/svg" height="0.875em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"/></svg>
@@ -22,7 +15,7 @@
                             <i class="far fa-save"></i> Scrap & store
                         </span>
                     </button>
-                    <input id="rc-code" name="rc-code" type="text" class="form-control" placeholder="Registration Code : 304565690, 306019423, 300515252" aria-label="Registration Code" aria-describedby="start_scraping">
+                    <input id="rc-code" name="rc-code" type="text" class="form-control" placeholder="Registration Code : e.g. 304565690, 306019423, 300515252" aria-label="Registration Code" aria-describedby="start_scraping">
                 </div>
             </div>
             <div id="rc-code-error" class="text-danger ml-3"></div>
@@ -41,24 +34,6 @@
             </div>
                     
             <br/>
-                    
-            <div class="card mt-4">
-                <div class="card-body">
-                    <h5 class="card-title text-center"> Why Submit a cURL Request ?</h5>
-                    <p class="card-text text-justify">
-                        Our targeted website, <a href="https://rekvizitai.vz.lt/">rekvizitai.vz.lt</a> uses cloudflare for bots. 
-                        So, to bypass this protection, we need to complete the captacha. The captcha sets a cookie which contains php session id as a validator and
-                        we have to include the cookie with every request as it is needed to complete the whole <b>Scrapping</b> process. 
-                        Also, as we can't determine which browser will be used to submit the request, we need to submit valid <b>User-Agent</b> too. 
-                        Different browsers set Cookie differently. 
-                        So, if the <b>User-Agent</b> and <b>Cookie</b> doesn't match, the request will not work as such requests are blocked by the targeted website.
-                    </p>
-                    <br/>
-                    <p class="card-text text-justify">
-                        How and which cURL request is needed to be <i>copied and pasted</i> here, can be found in the README.md file of this project.
-                    </p>
-                </div>
-            </div>
         </div>
 
     </div>
@@ -74,10 +49,8 @@
         $(function () {
             //Check if Cookie Set, then set the value to input fields.
             let cookie_rc = getCookie('rc-code');
-            let cookie_consent = retrieveFromLocalStorage('cookieConsent');
 
-            if (cookie_rc) {// This means both values should be present in the cookie.
-                $("#cookie-consent").val(cookie_consent);
+            if (cookie_rc) {
                 $("#rc-code").val(cookie_rc);
             }
 
@@ -87,14 +60,8 @@
                 $("#cookie-error").text("");
                 $("#rc-code-error").text("");
 
-                var cookieConsent = $("#cookie-consent").val().trim();
                 var rcCode = $("#rc-code").val().trim();
                 var csrfToken = $("#csrf_token").val().trim();
-
-                // Setting error message.
-                if (cookieConsent === "") {
-                    $("#cookie-error").text("Cookie Consent is required.");
-                }
 
                 let error_msg = registration_code_validation('#rc-code');
 
@@ -108,12 +75,13 @@
                     $("#scrap_text").hide();
                     
                     // Now AJAX ...
-                    if (cookieConsent !== "") {
+                    if (rcCode !== "" && csrfToken !== "") {
+                        
                         let formData = {
-                            'cookie-consent': cookieConsent,
                             'rc-code': rcCode,
                             'csrf_token': csrfToken
                         };
+                        
                         $.ajax({
                             type: 'POST',
                             url: '/company/scrap',
@@ -122,16 +90,12 @@
                                 // Set cookie to keep the input fields and then read from them.
                                 setCookie('rc-code', rcCode, 1);
 
-                                // Cookie consent breaks max char limit. Setting it in localStorage.
-                                saveToLocalStorage('cookieConsent', cookieConsent);
-
                                 // Show the success alert
                                 $('.alert-warning, .alert-danger').hide();
                                 $('.alert-info').text(response.message).fadeIn().delay(5000).fadeOut();
                             },
                             error: function (response, xhr) {
                                 removeCookie('rc-code');
-                                removeFromLocalStorage('cookieConsent');
 
                                 if (xhr.status === 400) {
                                     // Show the warning alert for status code 400
@@ -185,19 +149,6 @@
 
         function removeCookie(name) {
             document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-        }
-
-        // For cookie consent, as that is a large string. Cookie allows only 4096 bytes.
-        function saveToLocalStorage(key, data) {
-            localStorage.setItem(key, data);
-        }
-
-        function retrieveFromLocalStorage(key) {
-            return localStorage.getItem(key);
-        }
-
-        function removeFromLocalStorage(key) {
-            localStorage.removeItem(key);
         }
 
     </script>

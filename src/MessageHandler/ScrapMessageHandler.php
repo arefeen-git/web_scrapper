@@ -26,16 +26,15 @@ class ScrapMessageHandler implements MessageHandlerInterface
     public function __invoke(ScrapMessage $message)
     {
         $registrationCode = $message->getRegistrationCode();
-        $curlData = $message->getCurlData();
 
-        $company_details = $this->scraperUtility->start_scraping($registrationCode, $curlData);
+        $company_details = $this->scraperUtility->start_scraping($registrationCode);
         $store_new = !empty($company_details) ? $this->companyService->add_new_company($company_details) : false;
         
         if (!empty($store_new)){
             echo PHP_EOL . "Reg Code : " . $registrationCode . " Stored in ID : " . $store_new . ". " . PHP_EOL;
         }
         else{
-            echo PHP_EOL . "Reg Code : " . $registrationCode . " already exists / Provided Cookie Consent not working. Search company list to check if company already exists. "  . PHP_EOL;
+            echo PHP_EOL . "Reg Code : " . $registrationCode . " already exists. Search company list to check if company already exists. "  . PHP_EOL;
         }
     }
 }

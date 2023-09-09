@@ -108,9 +108,9 @@ class CompanyController extends AbstractController {
     }
 
     /**
-    * This method handles the scraping of new companies using provided registration codes and a cURL request.
+    * This method handles the scraping of new companies using provided registration code(s).
     * 
-    * @param Request $request The incoming request object containing registration codes and cURL request.
+    * @param Request $request The incoming request object containing registration code(s).
     *
     * @return JsonResponse Returns a JSON response with the result of the scraping operation.
     */
@@ -128,11 +128,9 @@ class CompanyController extends AbstractController {
             $statusCode = JsonResponse::HTTP_UNAUTHORIZED; // 401
             return new JsonResponse($responseData, $statusCode);
         } else {
-            $cURL = $request->request->get('cookie-consent');
-            $request->request->remove('cookie-consent'); // Removing for caching issue of long string.
             $registration_code = $request->request->get('rc-code');
 
-            $responseData = $this->companyService->scraper_service($registration_code, $cURL);
+            $responseData = $this->companyService->scraper_service($registration_code);
 
             return new JsonResponse($responseData, $responseData['statusCode']);
         }
