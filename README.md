@@ -158,6 +158,7 @@ Access the project at [http://localhost:8080/company/new](http://localhost:8080/
 
 12. **Company List:**
 
+ After hitting the "Scrap and store" button, monitor the messages in terminal where you ran the worker/consumer. 
  After scraping, view the list of companies. You can edit and delete (soft) entries as needed.
 
 If you encounter any issues or need assistance, contact me at [samsull.arefeen@gmail.com].
