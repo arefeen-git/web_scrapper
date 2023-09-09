@@ -1,6 +1,6 @@
 <?php
 
-/* 
+/*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Scripting/EmptyPHP.php to edit this template
  */
@@ -12,32 +12,33 @@ use App\Utility\ScraperUtility;
 use App\Service\CompanyService;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
-class ScrapMessageHandler implements MessageHandlerInterface
-{
+class ScrapMessageHandler implements MessageHandlerInterface {
+
     private $scraperUtility;
     private $companyService;
 
-    public function __construct(ScraperUtility $scraperUtility, CompanyService $companyService)
-    {
+    public function __construct(ScraperUtility $scraperUtility, CompanyService $companyService) {
         $this->scraperUtility = $scraperUtility;
         $this->companyService = $companyService;
     }
 
-    public function __invoke(ScrapMessage $message)
-    {
+    public function __invoke(ScrapMessage $message) {
         $registrationCode = $message->getRegistrationCode();
-        
+
         echo PHP_EOL . "Scrapping started for Reg Code : " . $registrationCode . PHP_EOL;
 
         $company_details = $this->scraperUtility->start_scraping($registrationCode);
-        $store_new = !empty($company_details) ? $this->companyService->add_new_company($company_details) : false;
-        
-        if (!empty($store_new)){
-            echo PHP_EOL . "Reg Code : " . $registrationCode . " Stored in ID : " . $store_new . ". " . PHP_EOL;
-        }
-        else{
-            echo PHP_EOL . "Reg Code : " . $registrationCode . " already exists. Search company list to check if company already exists. "  . PHP_EOL;
+
+        if (!empty($company_details['error_message'])) {
+            echo PHP_EOL . $company_details['error_message'] . PHP_EOL;
+        } else {
+            $store_new = !empty($company_details) ? $this->companyService->add_new_company($company_details) : false;
+
+            if (!empty($store_new)) {
+                echo PHP_EOL . "Reg Code : " . $registrationCode . " Stored in ID : " . $store_new . ". " . PHP_EOL;
+            } else {
+                echo PHP_EOL . "Reg Code : " . $registrationCode . " already exists. Search company list to check if company already exists. " . PHP_EOL;
+            }
         }
     }
 }
-

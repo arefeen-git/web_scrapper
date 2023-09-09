@@ -22,35 +22,13 @@ class ScraperUtility extends AbstractController {
 
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
-        
-        $curl = curl_init();
-        $headers[] = 'Content-Type: application/json';
         $form_data = ['code' => $registrationCode, 'order' => '1', 'resetFilter' => '0'];
 
-        $body = http_build_query($form_data);
-        
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HEADER, false);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-        
-        $data = [
-            "url" => $url,
-            "token" => Constants::SCRAPDO_TOKEN
-        ];
-        
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
-        curl_setopt($curl, CURLOPT_URL, Constants::SCRAPDO_URL . http_build_query($data));
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-            "Accept: */*",
-        ));
-
-        $html_chunk = curl_exec($curl);
-
-        curl_close($curl);
+        // Initiae cURL to post resgitration code to get Company.
+        $html_chunk = $this->_curl_request($url, $form_data);
         
         // If scrapdo throws error, return error message.
-        if (str_contains($html_chunk, 'StatusCode')){
+        if (str_contains($html_chunk, Constants::SCRAPDO_ERROR)){
             $err_response = json_decode($html_chunk);
             $message = [];
             $message['error_message'] = $err_response->Message;
@@ -81,44 +59,12 @@ class ScraperUtility extends AbstractController {
         $company_profile_url = $firstLink->getAttribute('href');
         $company_turnover_url = $company_profile_url . "turnover";
         
-        // ---- cURL block to start loading Company profile and extracting company details. ----
-        $curl = curl_init();
-
-        $data["url"] = $company_profile_url;
-        
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HEADER, false);
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
-        curl_setopt($curl, CURLOPT_URL, Constants::SCRAPDO_URL . http_build_query($data));
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-            "Accept: */*",
-        ));
-        
-        // Extracting Company Details from Company Profile URL
-        $company_profile_html_chunk = curl_exec($curl);
+        // Extracting Company Details from Company Profile Page
+        $company_profile_html_chunk = $this->_curl_request($company_profile_url);
         $company_details = $this->_retrieve_company_details($company_profile_html_chunk);
-
-        curl_close($curl);
-        // ---- END OF : cURL block to start loading Company profile and extracting company details. ----
-
-        // ---- cURL block to start loading Company FINANCES and extracting Finance table. ----
-        $curl = curl_init();
-
-        $data["url"] = $company_turnover_url;
         
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HEADER, false);
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
-        curl_setopt($curl, CURLOPT_URL, Constants::SCRAPDO_URL . http_build_query($data));
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-            "Accept: */*",
-        ));
-        
-        // Extraction 2 : Going for turnover details ...
-        $company_turnover_html_chunk = curl_exec($curl);
-        
-        curl_close($curl);
-        // ---- END OF: cURL block to start loading Company FINANCES and extracting Finance table. ----
+        // Extraction 2 (FINANCES): Going for turnover details ...
+        $company_turnover_html_chunk = $this->_curl_request($company_turnover_url);
 
         if (strpos($company_turnover_html_chunk, Constants::IDENTIFY_COMPANY_TURNOVER) == false) {
             $company_turnover = "Not Available";
@@ -129,6 +75,46 @@ class ScraperUtility extends AbstractController {
         $company_details['finances'] = $company_turnover;
 
         return $company_details;
+    }
+    
+    /**
+    * Initiate cURL request and returns webpage.
+    *
+    * @param string $url URL to load through curl.
+    * @param array $form_data optional, if present then indicates POST method.
+    *
+    * @return array An associative array containing extracted company details.
+    */
+    private function _curl_request($url, $form_data = []){
+        $request_method = !empty($form_data) ? 'POST' : 'GET';
+        $curl = curl_init();
+        
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        
+        if (!empty($form_data)) {
+            $body = http_build_query($form_data);
+            $headers[] = 'Content-Type: application/json';
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        }
+
+        $data = [
+            "url" => $url,
+            "token" => Constants::SCRAPDO_TOKEN
+        ];
+        
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $request_method);
+        curl_setopt($curl, CURLOPT_URL, Constants::SCRAPDO_URL . http_build_query($data));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            "Accept: */*",
+        ));
+        
+        $html_chunk = curl_exec($curl);
+        
+        curl_close($curl);
+        
+        return $html_chunk;
     }
 
     /**

@@ -12,6 +12,7 @@ class Constants {
     public const SCRAP_FROM     = 'https://rekvizitai.vz.lt/';
     public const SCRAPDO_URL    = "https://api.scrape.do?";
     public const SCRAPDO_TOKEN  = "2b5c016e99bd4a7eab63526aeb5abca88d310a99879";
+    public const SCRAPDO_ERROR  = 'StatusCode';
 
     public const ADDRESS    = 'ADDRESS';
     public const MOBILE     = 'MOBILE';
