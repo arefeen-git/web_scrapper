@@ -15,36 +15,47 @@ class ScraperUtility extends AbstractController {
      * Generates scrapped data and return company details and finances if available.
      *
      * @param int $registrationCode 9 digit registration code of the company.
-     * @param array $curlData Processed cURL data which will be used to set stream_context options for file_get_context.
      *
      * @return array Should return company details which can be used to create a company.
      */
-    public function start_scraping($registrationCode, $curlData): array {
+    public function start_scraping($registrationCode): array {
 
         // Set URL
         $url = Constants::SCRAP_FROM . 'en/company-search/1/';
         
         $curl = curl_init();
+        $headers[] = 'Content-Type: application/json';
+        $form_data = ['code' => $registrationCode, 'order' => '1', 'resetFilter' => '0'];
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => ['code' => $registrationCode, 'order' => '1', 'resetFilter' => '0'],
-            CURLOPT_HTTPHEADER => [
-                $curlData[Constants::COOKIE_IDENTIFIER],
-                $curlData[Constants::USER_AGENT_IDENTIFIER]
-            ],
-        ]);
+        $body = http_build_query($form_data);
+        
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $body);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        
+        $data = [
+            "url" => $url,
+            "token" => Constants::SCRAPDO_TOKEN
+        ];
+        
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($curl, CURLOPT_URL, Constants::SCRAPDO_URL . http_build_query($data));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            "Accept: */*",
+        ));
 
         $html_chunk = curl_exec($curl);
 
         curl_close($curl);
+        
+        // If scrapdo throws error, return error message.
+        if (str_contains($html_chunk, 'StatusCode')){
+            $err_response = json_decode($html_chunk);
+            $message = [];
+            $message['error_message'] = $err_response->Message;
+            return $message;
+        }
         
         $html_array = explode(PHP_EOL, $html_chunk);
 
@@ -73,20 +84,15 @@ class ScraperUtility extends AbstractController {
         // ---- cURL block to start loading Company profile and extracting company details. ----
         $curl = curl_init();
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $company_profile_url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_HTTPHEADER => [
-                $curlData[Constants::USER_AGENT_IDENTIFIER],
-                $curlData[Constants::COOKIE_IDENTIFIER]
-            ],
-        ]);
+        $data["url"] = $company_profile_url;
+        
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($curl, CURLOPT_URL, Constants::SCRAPDO_URL . http_build_query($data));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            "Accept: */*",
+        ));
         
         // Extracting Company Details from Company Profile URL
         $company_profile_html_chunk = curl_exec($curl);
@@ -98,20 +104,15 @@ class ScraperUtility extends AbstractController {
         // ---- cURL block to start loading Company FINANCES and extracting Finance table. ----
         $curl = curl_init();
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $company_turnover_url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_HTTPHEADER => [
-                $curlData[Constants::USER_AGENT_IDENTIFIER],
-                $curlData[Constants::COOKIE_IDENTIFIER]
-            ],
-        ]);
+        $data["url"] = $company_turnover_url;
+        
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($curl, CURLOPT_URL, Constants::SCRAPDO_URL . http_build_query($data));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            "Accept: */*",
+        ));
         
         // Extraction 2 : Going for turnover details ...
         $company_turnover_html_chunk = curl_exec($curl);
@@ -296,34 +297,5 @@ class ScraperUtility extends AbstractController {
         $result = trim($mod_html . '</table>');
 
         return trim($result);
-    }
-
-    /**
-    * Processes cURL string to extract specific headers.
-    *
-    * @param string $cURL cURL string containing headers
-    * @return array Extracted headers as an associative array
-    */
-    public function processCurl($cURL) {
-        $result = [];
-        $matches = [];
-
-        // Getting cookie, agent & content-type from provided cURL.
-        $pattern_cookie = "/" . Constants::COOKIE_IDENTIFIER . ": ([^']+)/i";
-        if (preg_match($pattern_cookie, $cURL, $matches)) {
-            $result[Constants::COOKIE_IDENTIFIER] = !empty($matches[1]) ? Constants::COOKIE_IDENTIFIER . ": " . trim($matches[1]) : null;
-        }
-
-        $pattern_agent = "/" . Constants::USER_AGENT_IDENTIFIER . ": ([^']+)/i";
-        if (preg_match($pattern_agent, $cURL, $matches)) {
-            $result[Constants::USER_AGENT_IDENTIFIER] = !empty($matches[1]) ? Constants::USER_AGENT_IDENTIFIER . ": " . trim($matches[1]) : null;
-        }
-
-        $pattern_ctype = "/" . Constants::CONTENT_TYPE_IDENTIFIER . ": ([^']+)/i";
-        if (preg_match($pattern_ctype, $cURL, $matches)) {
-            $result[Constants::CONTENT_TYPE_IDENTIFIER] = !empty($matches[1]) ? Constants::CONTENT_TYPE_IDENTIFIER . ": " . trim($matches[1]) : null;
-        }
-
-        return $result;
     }
 }

@@ -138,11 +138,10 @@ class CompanyService {
     * Handles scraping service for provided registration codes and cURL request.
     * 
     * @param string $registration_code The comma-separated registration codes.
-    * @param string $cURL The cURL request.
     *
     * @return array Returns an array containing the scraping result and status code.
     */
-    public function scraper_service($registration_code, $cURL) {
+    public function scraper_service($registration_code) {
 
         $filtered_rc_codes = $this->companyRepository->checkIfRegistrationCodeExists($registration_code);
 
@@ -158,25 +157,10 @@ class CompanyService {
         } else {
             // Else, $filtered_rc_codes['new'] will have at least one new value.
             $rc_codes = $filtered_rc_codes['new'];
-            
-            $formatted_cURL_data = $this->scraperUtility->processCurl($cURL);
-            
-            if (empty($formatted_cURL_data[Constants::COOKIE_IDENTIFIER]) ||
-                empty($formatted_cURL_data[Constants::USER_AGENT_IDENTIFIER]) ||
-                empty($formatted_cURL_data[Constants::CONTENT_TYPE_IDENTIFIER])
-            ) {
-                $responseData = [
-                    'message' => "Unable to process the cURL request. Please check and try again.",
-                    'statusCode' => JsonResponse::HTTP_UNAUTHORIZED // 401
-                ];
-
-                return $responseData;
-            }
-
 
             foreach ($rc_codes as $rc_code) {
-                // Scrapping starting in 3, 2, 1 ...
-                $message = new ScrapMessage($rc_code, $formatted_cURL_data);
+                // Scrapping starting in 3, 2, 1 ...                
+                $message = new ScrapMessage($rc_code);
                 $this->messageBusInterface->dispatch($message);
             }
             

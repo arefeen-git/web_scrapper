@@ -10,22 +10,15 @@ namespace App\Message;
 class ScrapMessage
 {
     private $registrationCode;
-    private $curlData;
 
-    public function __construct(string $registrationCode, array $curlData)
+    public function __construct(string $registrationCode)
     {
         $this->registrationCode = $registrationCode;
-        $this->curlData = $curlData;
     }
 
     public function getRegistrationCode(): string
     {
         return $this->registrationCode;
-    }
-
-    public function getCurlData(): array
-    {
-        return $this->curlData;
     }
 }
 
